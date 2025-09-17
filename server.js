@@ -15,7 +15,7 @@ const pool = new Pool({
   host: "localhost",   // якщо Express теж на сервері
   database: "maindatabase",
   password: "Igor2025",
-  port: 5432,
+  port: 5433,
 });
 
 // 🔹 Реєстрація
