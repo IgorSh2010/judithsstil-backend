@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import pkg from "pg";
 import authRoutes from "./routes/auth.js"; 
 import userRoutes from "./routes/users.js";
 
@@ -12,24 +11,13 @@ import userRoutes from "./routes/users.js";
 🔹 middleware/ — наприклад, перевірка JWT чи логування.
 */
 
-const { Pool } = pkg;
-
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 🔹 Підключення до PostgreSQL (налаштуй під свою базу)
-const pool = new Pool({
-  user: "dbadmin",
-  host: "localhost",   // якщо Express теж на сервері
-  database: "maindatabase",
-  password: "Igor2025",
-  port: 5433,
-});
-
 // Маршрути 
 app.use("/auth", authRoutes); 
-app.use("/users", userRoutes);
+//app.use("/users", userRoutes);
 
 // 🔹 Тестовий роут
 app.get("/", (req, res) => {
