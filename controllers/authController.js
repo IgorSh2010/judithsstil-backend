@@ -1,4 +1,3 @@
-import express from "express";
 import pkg from "pg";
 import bcrypt from "bcrypt";
 
@@ -48,4 +47,3 @@ export const register = async (req, res) => {
     }
   };
 
-  
