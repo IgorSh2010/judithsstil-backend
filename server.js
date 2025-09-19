@@ -1,7 +1,8 @@
 import express from "express";
 import cors from "cors";
 import pkg from "pg";
-import bcrypt from "bcrypt";
+import authRoutes from "./routes/auth.js"; 
+import userRoutes from "./routes/users.js";
 
 /*
 🔹 server.js — тільки точка входу: підняти Express, підключити middleware, маршрути, запустити сервер.
@@ -25,6 +26,10 @@ const pool = new Pool({
   password: "Igor2025",
   port: 5433,
 });
+
+// Маршрути 
+app.use("/auth", authRoutes); 
+app.use("/users", userRoutes);
 
 // 🔹 Тестовий роут
 app.get("/", (req, res) => {
