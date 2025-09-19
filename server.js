@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 //import authRoutes from "./routes/auth.js"; 
-//import userRoutes from "./routes/users.js";
+import userRoutes from "./routes/users.js";
 
 /*
 🔹 server.js — тільки точка входу: підняти Express, підключити middleware, маршрути, запустити сервер.
