@@ -1,7 +1,11 @@
 import express from "express";
 import cors from "cors";
+//import { pool } from "./middleware/dbConn.js";
 import authRoutes from "./routes/auth.js"; 
 //import userRoutes from "./routes/users.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 /*
 🔹 server.js — тільки точка входу: підняти Express, підключити middleware, маршрути, запустити сервер.
@@ -21,11 +25,11 @@ app.use("/auth", authRoutes);
 
 // 🔹 Тестовий роут
 app.get("/", (req, res) => {
-  res.send("Backend API працює ✅");
+  res.send("Backend API працює ✅🚀");
 });
 
 // 🔹 Запуск сервера
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`🚀 Backend API слухає на порту ${PORT}`);
 });

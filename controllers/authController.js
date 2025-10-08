@@ -1,26 +1,25 @@
-import pkg from "pg";
+import dotenv from "dotenv";
+import { pool } from "../middleware/dbConn.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const { Pool } = pkg;
-const pool = new Pool({
-  user: "dbadmin",
-  host: "localhost",   // якщо Express теж на сервері
-  database: "maindatabase",
-  password: "Igor2025",
-  port: 5433,
-});
+dotenv.config();
 
-// Секретний ключ для підпису токенів (пізніше можна винести в .env)
-const JWT_SECRET = "super_secret_key"; 
-const JWT_EXPIRES_IN = "1h"; // термін дії токена
+//Допоміжна функція для створення токена
+const generateToken = (user) => {
+  return jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || "1h" }
+  );
+};
 
 // Реєстрація
 export const register = async (req, res) => {
   const { email, password } = req.body; 
 
   if (!email || !password) {
-      return res.status(400).json({ message: "Email і пароль обов’язкові" });
+      return res.status(400).json({ message: "Nie wypełnione Email lub hasło" });
     }
   
   try {
@@ -40,9 +39,13 @@ export const register = async (req, res) => {
     [email, hashedPassword]
     );
 
+    const newUser = result.rows[0];
+    const token = generateToken(newUser);
+
     res.status(201).json({
-    message: "Реєстрація успішна",
+    message: "Rejestracja udana!",
     user: result.rows[0],
+    token,
     });
 
     } catch (err) {
@@ -51,37 +54,34 @@ export const register = async (req, res) => {
     }
   };
 
-// Логін
+// Autoryzacja (logowanie)
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
     if (!email || !password) {
-        return res.status(400).json({ message: "Email і пароль обов’язкові" });
+        return res.status(400).json({ message: "Nie wypełnione Email lub hasło" });
         }
+
     try {
       // Знаходження юзера
       const userResult = await pool.query("SELECT id, email, password FROM users WHERE email = $1", [email]);
       if (userResult.rows.length === 0) {
-        return res.status(400).json({ message: "Невірний email або пароль" });
+        return res.status(400).json({ message: "Email lub hasło nie prawidłowe" });
       }
         const user = userResult.rows[0];
         // Перевірка пароля
         const match = await bcrypt.compare(password, user.password);
 
         if (!match) {
-          return res.status(400).json({ message: "Невірний email або пароль" });
+          return res.status(400).json({ message: "Email lub hasło nie prawidłowe" });
         }
 
         // Генерація токена
-        const token = jwt.sign(
-            { id: user.id, email: user.email }, // payload
-            JWT_SECRET,                         // секретний ключ
-            { expiresIn: JWT_EXPIRES_IN }       // термін дії
-        );
+        const token = generateToken(user);
 
         // Якщо все ок, повертаємо дані юзера (токен можна додати пізніше)
         res.json({
-          message: "Логін успішний",
+          message: "Użytkownik zalogowany!",
             token,
           user: { id: user.id, email: user.email },
         });
@@ -89,5 +89,23 @@ export const login = async (req, res) => {
       console.error("Błąd pod czas logowania:", err);
       res.status(500).json({ message: "Wewnętrny błąd serwera" });
     }
+    };
+
+    // 👤 Перевірка авторизації (опціонально)
+    export const getProfile = async (req, res) => {
+      try {
+        // user додається через middleware після перевірки токена
+        const userId = req.user.id;
+    
+        const result = await pool.query("SELECT id, email, created_at FROM users WHERE id = $1", [userId]);
+        if (result.rows.length === 0) {
+          return res.status(404).json({ message: "Користувача не знайдено" });
+        }
+    
+        res.json(result.rows[0]);
+      } catch (err) {
+        console.error("❌ Помилка при отриманні профілю:", err);
+        res.status(500).json({ message: "Внутрішня помилка сервера" });
+      }
     };
 
