@@ -79,6 +79,17 @@ export const login = async (req, res) => {
         // Генерація токена
         const token = generateToken(user);
 
+        // Отримати IP і User-Agent
+        const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+        const userAgent = req.headers["user-agent"];
+
+        // Оновити last_login і додати запис в user_logins
+        await pool.query("UPDATE users SET last_login = NOW() WHERE id = $1", [user.id]);
+        await pool.query(
+          "INSERT INTO user_logins (user_id, ip_address, user_agent) VALUES ($1, $2, $3)",
+          [user.id, ip, userAgent]
+        );
+
         // Якщо все ок, повертаємо дані юзера і токен
         res.json({
           message: "Użytkownik zalogowany!",
