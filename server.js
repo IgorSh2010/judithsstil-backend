@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-//import { pool } from "./middleware/dbConn.js";
+import { pool } from "./middleware/dbConn.js";
 import authRoutes from "./routes/auth.js"; 
 //import userRoutes from "./routes/users.js";
 import dotenv from "dotenv";
