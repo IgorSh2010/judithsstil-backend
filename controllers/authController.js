@@ -8,7 +8,7 @@ dotenv.config();
 //Допоміжна функція для створення токена
 const generateToken = (user) => {
   return jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, email: user.email, name: user.username },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || "1h" }
   );
@@ -94,7 +94,7 @@ export const login = async (req, res) => {
         res.json({
           message: "Użytkownik zalogowany!",
             token,
-          user: { id: user.id, email: user.email },
+          user: { id: user.id, email: user.email, name: user.username },
         });
     } catch (err) {
       console.error("Błąd pod czas logowania:", err);
