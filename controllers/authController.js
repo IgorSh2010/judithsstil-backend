@@ -66,7 +66,7 @@ export const login = async (req, res) => {
       // Знаходження юзера
       const userResult = await pool.query("SELECT id, email, password FROM users WHERE email = $1 AND tenant = $2", [email, tenant]);
       if (userResult.rows.length === 0) {
-        return res.status(400).json({ message: "Email lub hasło nie prawidłowe" });
+        return res.status(400).json({ message: "Email lub hasło nie prawidłowe lub użytkownik nie zarejestrowany!" });
       }
         const user = userResult.rows[0];
         // Перевірка пароля
