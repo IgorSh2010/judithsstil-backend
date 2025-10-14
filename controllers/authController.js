@@ -16,7 +16,7 @@ const generateToken = (user) => {
 
 // Реєстрація
 export const register = async (req, res) => {
-  const { email, password } = req.body; 
+  const { email, password, tenant } = req.body; 
 
   if (!email || !password) {
       return res.status(400).json({ message: "Nie wypełnione Email lub hasło" });
@@ -24,7 +24,7 @@ export const register = async (req, res) => {
   
   try {
     // Перевірка, чи існує вже юзер
-    const existing = await pool.query("SELECT id FROM users WHERE email = $1", [email]);
+    const existing = await pool.query("SELECT id FROM users WHERE email = $1 AND tenant = $2", [email, tenant]);
     if (existing.rows.length > 0) {
     return res.status(400).json({ message: "Użytkownik z takim email już istnieje!" });
     }
@@ -34,9 +34,9 @@ export const register = async (req, res) => {
 
     // Додавання користувача
     const result = await pool.query(
-    `INSERT INTO users (email, password) 
-        VALUES ($1, $2) RETURNING id, email, created_at`,
-    [email, hashedPassword]
+    `INSERT INTO users (email, password, tenant) 
+        VALUES ($1, $2, $3) RETURNING id, email, created_at`,
+    [email, hashedPassword, tenant]
     );
 
     const newUser = result.rows[0];
@@ -64,7 +64,7 @@ export const login = async (req, res) => {
 
     try {
       // Знаходження юзера
-      const userResult = await pool.query("SELECT id, email, password FROM users WHERE email = $1", [email]);
+      const userResult = await pool.query("SELECT id, email, password FROM users WHERE email = $1 AND tenant = $2", [email, tenant]);
       if (userResult.rows.length === 0) {
         return res.status(400).json({ message: "Email lub hasło nie prawidłowe" });
       }
