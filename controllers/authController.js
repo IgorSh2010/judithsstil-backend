@@ -56,7 +56,7 @@ export const register = async (req, res) => {
 
 // Autoryzacja (logowanie)
 export const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, tenant } = req.body;
 
     if (!email || !password) {
         return res.status(400).json({ message: "Nie wypełnione Email lub hasło" });
@@ -79,7 +79,7 @@ export const login = async (req, res) => {
         // Генерація токена
         const token = generateToken(user);
 
-        // Якщо все ок, повертаємо дані юзера (токен можна додати пізніше)
+        // Якщо все ок, повертаємо дані юзера і токен
         res.json({
           message: "Użytkownik zalogowany!",
             token,
@@ -87,25 +87,25 @@ export const login = async (req, res) => {
         });
     } catch (err) {
       console.error("Błąd pod czas logowania:", err);
-      res.status(500).json({ message: "Wewnętrny błąd serwera" });
+      res.status(500).json({ message: "Wewnętrny błąd serwera - login" });
     }
     };
 
-    // 👤 Перевірка авторизації (опціонально)
-    export const getProfile = async (req, res) => {
-      try {
-        // user додається через middleware після перевірки токена
-        const userId = req.user.id;
-    
-        const result = await pool.query("SELECT id, email, created_at FROM users WHERE id = $1", [userId]);
-        if (result.rows.length === 0) {
-          return res.status(404).json({ message: "Користувача не знайдено" });
-        }
-    
-        res.json(result.rows[0]);
-      } catch (err) {
-        console.error("❌ Помилка при отриманні профілю:", err);
-        res.status(500).json({ message: "Внутрішня помилка сервера" });
+// 👤 Перевірка авторизації (опціонально)
+export const getProfile = async (req, res) => {
+    try {
+      // user додається через middleware після перевірки токена
+      const userId = req.user.id;
+  
+      const result = await pool.query("SELECT id, email, created_at FROM users WHERE id = $1", [userId]);
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Користувача не знайдено" });
       }
-    };
+  
+      res.json(result.rows[0]);
+    } catch (err) {
+      console.error("❌ Помилка при отриманні профілю:", err);
+      res.status(500).json({ message: "Внутрішня помилка сервера" });
+    }
+  };
 
