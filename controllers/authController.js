@@ -8,9 +8,13 @@ dotenv.config();
 //Допоміжна функція для створення токена
 const generateToken = (user) => {
   return jwt.sign(
-    { id: user.id, email: user.email, name: user.username },
+    { id: user.id,
+      email: user.email,
+      username: user.username,
+      role: user.role, 
+    },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || "1h" }
+    { expiresIn: process.env.JWT_EXPIRES_IN || "2h" }
   );
 };
 
@@ -94,7 +98,7 @@ export const login = async (req, res) => {
         res.json({
           message: "Użytkownik zalogowany!",
             token,
-          user: { id: user.id, email: user.email, name: user.username },
+          user: { id: user.id, email: user.email, name: user.username, role: user.role },
         });
     } catch (err) {
       console.error("Błąd pod czas logowania:", err);
