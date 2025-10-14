@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { pool } from "./middleware/dbConn.js";
+import { authenticateToken } from "./middleware/authMiddleware.js";
 import authRoutes from "./routes/auth.js"; 
 //import userRoutes from "./routes/users.js";
 import dotenv from "dotenv";
@@ -22,6 +23,25 @@ app.use(express.json());
 // Маршрути 
 app.use("/api/auth", authRoutes); 
 //app.use("/users", userRoutes);
+
+// 🧑‍💻 Отримати поточного користувача
+app.get("/api/me", authenticateToken, async (req, res) => {
+  try {
+    // req.user.id — це id користувача з токена
+    const result = await pool.query(
+      "SELECT id, email, username, tenant, phone, role FROM users WHERE id = $1",
+      [req.user.id]
+    );
+
+    if (result.rows.length === 0)
+      return res.status(404).json({ message: "User not founded!" });
+
+    res.json({ user: result.rows[0] });
+  } catch (err) {
+    console.error("❌ Помилка при отриманні користувача:", err);
+    res.status(500).json({ message: "Помилка сервера", error: err.message });
+  }
+});
 
 // 🔹 Тестовий роут
 app.get("/", (req, res) => {

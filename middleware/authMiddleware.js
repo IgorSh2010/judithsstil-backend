@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 const app = express();
 const JWT_SECRET = app.use(cookieParser()); // має збігатися з login
 
-export const authMiddleware = (req, res, next) => {
+export const authenticateToken = (req, res, next) => {
   try {
     // 1) спробувати витягти токен з заголовку
     const authHeader = req.headers["authorization"];
