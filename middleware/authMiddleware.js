@@ -1,9 +1,12 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import cookieParser from 'cookie-parser';
+import dotenv from "dotenv";
+//import cookieParser from 'cookie-parser';
+
+dotenv.config();
 
 const app = express();
-const JWT_SECRET = app.use(cookieParser()); // має збігатися з login
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export const authenticateToken = (req, res, next) => {
   try {
