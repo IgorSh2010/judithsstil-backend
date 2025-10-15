@@ -4,7 +4,7 @@ import { pool } from "../middleware/dbConn.js";
 dotenv.config();
 
 export const userUpdate = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, phone, adress, password } = req.body;
 
   if (!req.user) {
     return res.status(401).json({ message: "Nieautoryzowany" });
@@ -22,6 +22,14 @@ export const userUpdate = async (req, res) => {
     if (email) {
       updates.push(`email = $${idx++}`);
       values.push(email);
+    }
+    if (phone) {
+      updates.push(`phone = $${idx++}`);
+      values.push(phone);
+    }
+    if (adress) {
+      updates.push(`adress = $${idx++}`);
+      values.push(adress);
     }
     if (password) {
       updates.push(`password = $${idx++}`);
