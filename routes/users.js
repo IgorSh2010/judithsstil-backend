@@ -1,9 +1,10 @@
 import express from "express";
 import { userUpdate } from "../controllers/userController.js";
+import { authenticateToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/update", userUpdate); //, authenticateToken
+router.post("/update", authenticateToken, userUpdate); //, 
   
 
 // router.get("/admin-only", authMiddleware, requireRole("admin"), (req, res) => {
