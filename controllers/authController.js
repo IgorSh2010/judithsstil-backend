@@ -6,14 +6,7 @@ import jwt from "jsonwebtoken";
 dotenv.config();
 
 //Допоміжна функція для створення токена
-const generateToken = (user) => {
-  // console.log("Generating token for user:", user);
-  // console.log("JWT_SECRET:", process.env.JWT_SECRET);
-  // console.log("ID:", user.id);
-  // console.log("email:", user.email);
-  // console.log("username:", user.username);
-  
-  
+const generateToken = (user) => {  
   return jwt.sign(
     { id: user.id,
       email: user.email,
