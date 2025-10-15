@@ -89,9 +89,7 @@ export const login = async (req, res) => {
 
         // Генерація токена
         const token = generateToken(user);
-        console.log("Auth header:", req.headers["authorization"]);
-        console.log("Generated token:", token);
-        
+
         // Отримати IP і User-Agent
         const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
         const userAgent = req.headers["user-agent"];

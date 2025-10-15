@@ -25,8 +25,12 @@ export const authenticateToken = (req, res, next) => {
     if (!token) return res.status(401).json({ message: "Токен відсутній" });
 
     // 3) верифікуємо
-    console.log("JWT_SECRET:", process.env.JWT_SECRET);
-    console.log("Incoming token:", token);
+    console.log("==== AUTH DEBUG ====");
+    console.log("JWT_SECRET-middle:", process.env.JWT_SECRET);
+    console.log("Incoming token-middle:", token);
+    console.log("Auth header-middle:", req.headers["authorization"]);
+    console.log("Cookies:", req.cookies);
+    console.log("==== ========= ====");
     const decoded = jwt.verify(token, JWT_SECRET);
     if (!decoded) return res.status(401).json({ message: "Недійсний токен або невалідний" });
 
