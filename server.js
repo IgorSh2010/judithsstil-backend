@@ -29,7 +29,7 @@ app.get("/api/me", authenticateToken, async (req, res) => {
   try {
     // req.user.id — це id користувача з токена
     const result = await pool.query(
-      "SELECT id, email, username, tenant, phone, role FROM users WHERE id = $1",
+      "SELECT id, email, username, tenant, phone, adress, role FROM users WHERE id = $1",
       [req.user.id]
     );
 
