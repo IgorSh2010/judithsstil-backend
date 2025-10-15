@@ -3,7 +3,7 @@ import { userUpdate } from "../controllers/userController.js";
 
 const router = express.Router();
 
-router.put("/update", userUpdate); //, authenticateToken
+router.post("/update", userUpdate); //, authenticateToken
   
 
 // router.get("/admin-only", authMiddleware, requireRole("admin"), (req, res) => {
