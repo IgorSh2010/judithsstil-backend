@@ -25,9 +25,11 @@ export const authenticateToken = (req, res, next) => {
     if (!token) return res.status(401).json({ message: "Токен відсутній" });
 
     // 3) верифікуємо
+    console.log("JWT_SECRET:", process.env.JWT_SECRET);
+    console.log("Incoming token:", token);
     const decoded = jwt.verify(token, JWT_SECRET);
     if (!decoded) return res.status(401).json({ message: "Недійсний токен або невалідний" });
-    
+
     // підкладемо payload у req.user
     req.user = decoded;
     next();
