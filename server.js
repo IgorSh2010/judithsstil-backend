@@ -36,6 +36,13 @@ app.get("/api/me", authenticateToken, async (req, res) => {
     if (result.rows.length === 0)
       return res.status(404).json({ message: "User not founded!" });
 
+     console.log("==== /api/me DEBUG ====");
+     console.log("JWT_SECRET:", process.env.JWT_SECRET);
+        // console.log("Incoming token:", token);
+     console.log("Auth header-middle:", req.headers["authorization"]);
+     console.log("result:", result.rows[0]);
+     console.log("==== ========= ====");
+
     res.json({ user: result.rows[0] });
   } catch (err) {
     console.error("❌ Помилка при отриманні користувача:", err);
