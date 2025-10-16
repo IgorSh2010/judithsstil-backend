@@ -4,6 +4,7 @@ import { pool } from "./middleware/dbConn.js";
 import { authenticateToken } from "./middleware/authMiddleware.js"; 
 import authRoutes from "./routes/auth.js"; 
 import userRoutes from "./routes/users.js";
+import products from "./routes/products.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(express.json());
 // Маршрути 
 app.use("/api/auth", authRoutes); 
 app.use("/users", userRoutes);
+app.use("/api/products", products);
 
 // 🧑‍💻 Отримати поточного користувача
 app.get("/api/me", authenticateToken, async (req, res) => {
