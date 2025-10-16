@@ -1,11 +1,12 @@
 import express from "express";
 import multer from "multer";
 import { createProduct } from "../controllers/productController.js";
+import { tenantResolver } from "../middleware/tenantResolver.js";
 //import { authenticateToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 const upload = multer({ dest: "tmp/" }); // тимчасова папка
 
-router.post("/create", upload.array("images", 8), createProduct); //authenticateToken
+router.post("/create", tenantResolver, upload.array("images", 8), createProduct); //authenticateToken
 
 export default router;

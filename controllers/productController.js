@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
-import { pool } from "../middleware/dbConn.js";
+//import { pool } from "../middleware/dbConn.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -12,6 +12,7 @@ cloudinary.config({
 });
 
 export const createProduct = async (req, res) => {
+  const client = req.dbClient;
   const { name, description, price } = req.body;
   const files = req.files;
 
@@ -26,7 +27,7 @@ export const createProduct = async (req, res) => {
       VALUES ($1, $2, $3)
       RETURNING id;
     `;
-    const result = await pool.query(queryProduct, [name, description || "", price]);
+    const result = await client.query(queryProduct, [name, description || "", price]);
     const productId = result.rows[0].id;
 
     // 2️⃣ Завантажуємо фото на Cloudinary
@@ -47,7 +48,7 @@ export const createProduct = async (req, res) => {
         INSERT INTO product_images (product_id, image_url)
         VALUES ${uploadedUrls.map((_, i) => `($1, $${i + 2})`).join(", ")}
       `;
-      await pool.query(insertImageQuery, [productId, ...uploadedUrls]);
+      await client.query(insertImageQuery, [productId, ...uploadedUrls]);
     }
 
     res.status(201).json({

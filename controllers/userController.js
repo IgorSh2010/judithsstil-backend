@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import bcrypt from "bcryptjs";
 import { pool } from "../middleware/dbConn.js";
 
 dotenv.config();
@@ -33,7 +34,7 @@ export const userUpdate = async (req, res) => {
     }
     if (password) {
       updates.push(`password = $${idx++}`);
-      values.push(password); // в реальному проекті — bcrypt.hash(password, 10)
+      values.push(bcrypt.hash(password, 10)); // в реальному проекті — bcrypt.hash(password, 10)
     }
 
     if (updates.length === 0) return res.json({ message: "Nic do zmiany" });
