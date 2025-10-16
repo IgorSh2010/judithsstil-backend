@@ -11,7 +11,6 @@ const generateToken = (user) => {
     { id: user.id,
       email: user.email,
       tenant: user.tenant,
-      role: user.role, 
     },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || "2h" }
@@ -68,7 +67,7 @@ export const login = async (req, res) => {
 
     try {
       // Знаходження юзера
-      const userResult = await pool.query("SELECT id, email, password FROM users WHERE email = $1 AND tenant = $2", [email, tenant]);
+      const userResult = await pool.query("SELECT id, email, tenant, password FROM users WHERE email = $1 AND tenant = $2", [email, tenant]);
       if (userResult.rows.length === 0) {
         return res.status(400).json({ message: "Email lub hasło nie prawidłowe lub użytkownik nie zarejestrowany!" });
       }
