@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import pool from  "./dbConn.js";
+import { pool } from  "./dbConn.js";
 import dotenv from "dotenv";
 
 dotenv.config();
