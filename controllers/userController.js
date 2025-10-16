@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import bcrypt from "bcryptjs";
+import bcrypt  from "bcrypt";
 import { pool } from "../middleware/dbConn.js";
 
 dotenv.config();
