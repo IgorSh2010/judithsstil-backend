@@ -6,6 +6,7 @@ dotenv.config();
 
 export const tenantResolver = async (req, res, next) => {
   try {
+    console.log("🔎 Authorization header:", req.headers.authorization);
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       return res.status(401).json({ message: "No token provided" });
