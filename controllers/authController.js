@@ -81,8 +81,6 @@ export const login = async (req, res) => {
 
         // Генерація токена
         const token = generateToken(user);
-        console.log("🔎 JWT_SECRET:", process.env.JWT_SECRET);
-        console.log("🔎 Generated Token:", token);
 
         // Отримати IP і User-Agent
         const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
