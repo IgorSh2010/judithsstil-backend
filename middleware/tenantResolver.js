@@ -12,6 +12,7 @@ export const tenantResolver = async (req, res, next) => {
       return res.status(401).json({ message: "No token provided" });
     }
 
+    console.log("🔎 JWT_SECRET:", process.env.JWT_SECRET);
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const tenantId = decoded.tenant_id;
