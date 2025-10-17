@@ -73,7 +73,11 @@ export const getProducts = async (req, res) => {
       ORDER BY p.created_at DESC;
     `;
     const result = await client.query(query);
-    res.json({ products: result.rows });
+    const products = result.rows.map((p) => ({
+      ...p,
+      images: typeof p.images === "string" ? JSON.parse(p.images) : p.images
+    }));
+    res.json(products);
   } catch (err) {
     console.error("❌ Błąd pobierania produktów:", err);
     res.status(500).json({ message: "Błąd serwera" });
