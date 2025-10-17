@@ -23,7 +23,7 @@ export const createProduct = async (req, res) => {
   try {
     // 1️⃣ Створюємо сам товар
     const queryProduct = `
-      INSERT INTO products (name, description, price)
+      INSERT INTO products (title, description, price)
       VALUES ($1, $2, $3)
       RETURNING id;
     `;
