@@ -15,7 +15,7 @@ export const tenantResolver = async (req, res, next) => {
     console.log("🔎 JWT_SECRET:", process.env.JWT_SECRET);
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const tenantId = decoded.tenant_id;
+    const tenantId = decoded.tenant;
 
     if (!tenantId) {
       return res.status(400).json({ message: "No tenant info" });
