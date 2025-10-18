@@ -88,11 +88,12 @@ export const changeAvailability = async (req, res) => {
   const client = req.dbClient;
   const productId = req.params.id;
   const { available } = req.body; 
-  
+
   try {
     const query = `
       UPDATE products 
-      SET is_available = $1 
+      SET is_available = $1,
+          updated_at = NOW() 
       WHERE id = $2
       RETURNING id, is_available;
     `;
@@ -108,6 +109,36 @@ export const changeAvailability = async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Błąd zmiany dostępności produktu:", err);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+};
+
+export const deleteProduct = async (req, res) => {
+  const client = req.dbClient;
+  const productId = req.params.id;
+  try {
+    // Видаляємо зображення з Cloudinary
+    const imageQuery = `SELECT image_url FROM product_images WHERE product_id = $1`;
+    const imageResult = await client.query(imageQuery, [productId]);
+    for (const row of imageResult.rows) {
+      const publicId = row.image_url.split("/").slice(-2).join("/").split(".")[0];
+      await cloudinary.uploader.destroy(publicId);
+    }
+    // Видаляємо записи з product_images
+    await client.query(`DELETE FROM product_images WHERE product_id = $1`, [productId]);
+
+    // Видаляємо сам продукт
+    const deleteQuery = `DELETE FROM products WHERE id = $1 RETURNING id;`;
+    const deleteResult = await client.query(deleteQuery, [productId]);
+
+    if (deleteResult.rows.length === 0) {
+      return res.status(404).json({ message: "Produkt nie znaleziony." });
+    }
+    
+    res.json({ message: "Produkt usunięty pomyślnie." });
+
+  } catch (err) {
+    console.error("❌ Błąd usuwania produktu:", err);
     res.status(500).json({ message: "Błąd serwera" });
   }
 };
