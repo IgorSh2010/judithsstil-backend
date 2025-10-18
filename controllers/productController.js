@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid";
+import { uuidv4 } from "uuid";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 //import { pool } from "../middleware/dbConn.js";
@@ -35,13 +35,16 @@ export const createProduct = async (req, res) => {
     const uploadedUrls = [];
     if (files && files.length > 0) {
       for (const file of files) {
-        const shortName = uuidv4().slice(0, 10); // типу "f2a4c1e8b9"
+        const shortName = uuidv4().slice(0, 18); // типу "f2a4c1e8b9"
         const uploadResult = await cloudinary.uploader.upload(file.path, {
           folder: `products/${productId}`,
           public_id: shortName, // Cloudinary сам додасть розширення
           resource_type: "image",
         });
-        uploadedUrls.push(uploadResult.secure_url);
+        uploadedUrls.push({
+                            url: uploadResult.secure_url,
+                            public_id: uploadResult.public_id,
+                          });
         fs.unlinkSync(file.path); // видалення тимчасового файлу
       }
     }
@@ -49,10 +52,16 @@ export const createProduct = async (req, res) => {
     // 3️⃣ Зберігаємо URL у базі
     if (uploadedUrls.length > 0) {
       const insertImageQuery = `
-        INSERT INTO product_images (product_id, image_url)
-        VALUES ${uploadedUrls.map((_, i) => `($1, $${i + 2})`).join(", ")}
+        INSERT INTO product_images (product_id, image_url, public_id)
+        VALUES ${uploaded.map((_, i) => `($1, $${i * 2 + 2}, $${i * 2 + 3})`).join(", ")} 
       `;
-      await client.query(insertImageQuery, [productId, ...uploadedUrls]);
+
+      const params = [productId];
+      uploaded.forEach((img) => {
+        params.push(img.url, img.public_id);
+      });
+      
+      await client.query(insertImageQuery, params);
     }
 
     res.status(201).json({
@@ -125,8 +134,9 @@ export const deleteProduct = async (req, res) => {
     const imageQuery = `SELECT image_url FROM product_images WHERE product_id = $1`;
     const imageResult = await client.query(imageQuery, [productId]);
     for (const row of imageResult.rows) {
-      const publicId = row.image_url.split("/").slice(-2).join("/").split(".")[0];
-      await cloudinary.uploader.destroy(publicId);
+      if (row.public_id) {
+        await cloudinary.uploader.destroy(row.public_id);
+      }
     }
     // Видаляємо записи з product_images
     await client.query(`DELETE FROM product_images WHERE product_id = $1`, [productId]);
