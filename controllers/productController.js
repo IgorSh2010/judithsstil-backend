@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 //import { pool } from "../middleware/dbConn.js";
@@ -34,8 +35,11 @@ export const createProduct = async (req, res) => {
     const uploadedUrls = [];
     if (files && files.length > 0) {
       for (const file of files) {
+        const shortName = uuidv4().slice(0, 10); // типу "f2a4c1e8b9"
         const uploadResult = await cloudinary.uploader.upload(file.path, {
           folder: `products/${productId}`,
+          public_id: shortName, // Cloudinary сам додасть розширення
+          resource_type: "image",
         });
         uploadedUrls.push(uploadResult.secure_url);
         fs.unlinkSync(file.path); // видалення тимчасового файлу
@@ -134,7 +138,7 @@ export const deleteProduct = async (req, res) => {
     if (deleteResult.rows.length === 0) {
       return res.status(404).json({ message: "Produkt nie znaleziony." });
     }
-    
+
     res.json({ message: "Produkt usunięty pomyślnie." });
 
   } catch (err) {
