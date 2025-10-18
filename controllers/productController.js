@@ -88,9 +88,7 @@ export const changeAvailability = async (req, res) => {
   const client = req.dbClient;
   const productId = req.params.id;
   const { available } = req.body; 
-  console.log("ID отримано:", req.params.id);
-  console.log("Новий статус отримано:", req.body);
-
+  
   try {
     const query = `
       UPDATE products 
