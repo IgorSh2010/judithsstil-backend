@@ -9,6 +9,6 @@ const upload = multer({ dest: "tmp/" }); // тимчасова папка
 
 router.post("/create", tenantResolver, upload.array("images", 8), createProduct); //authenticateToken
 router.get("/get", tenantResolver, getProducts); //authenticateToken
-router.patch("/:id/availability", tenantResolver, changeAvailability); //authenticateToken 
+router.put("/:id/availability", tenantResolver, changeAvailability); //authenticateToken 
 
 export default router;
