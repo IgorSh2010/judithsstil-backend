@@ -132,7 +132,7 @@ export const deleteProduct = async (req, res) => {
   const productId = req.params.id;
   try {
     // Видаляємо зображення з Cloudinary
-    const imageQuery = `SELECT image_url FROM product_images WHERE product_id = $1`;
+    const imageQuery = `SELECT image_url, public_id FROM product_images WHERE product_id = $1`;
     const imageResult = await client.query(imageQuery, [productId]);
     for (const row of imageResult.rows) {
       if (row.public_id) {
