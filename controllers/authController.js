@@ -106,7 +106,7 @@ export const login = async (req, res) => {
         await pool.query(
           `INSERT INTO user_logins (user_id, ip_address, user_agent)
            VALUES ($1, $2, $3)`,
-          [user.id, ip, userAgent, refreshToken]
+          [user.id, ip, userAgent]
         );
 
         await client.query(
