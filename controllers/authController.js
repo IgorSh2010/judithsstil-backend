@@ -108,7 +108,7 @@ export const login = async (req, res) => {
           [user.id, ip, userAgent]
         );
 
-        await client.query(
+        await pool.query(
           `INSERT INTO user_refresh_tokens (user_id, token, user_agent, ip_address, expires_at)
           VALUES ($1, $2, $3, $4, NOW() + interval '3 days')`,
           [user.id, refreshToken, userAgent, ip]
