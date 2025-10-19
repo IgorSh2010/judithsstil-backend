@@ -139,6 +139,8 @@ export const deleteProduct = async (req, res) => {
         await cloudinary.uploader.destroy(row.public_id);
       }
     }
+    await cloudinary.api.delete_folder(`products/${productId}`);
+    
     // Видаляємо записи з product_images
     await client.query(`DELETE FROM product_images WHERE product_id = $1`, [productId]);
 
