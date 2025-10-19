@@ -13,7 +13,18 @@ const generateToken = (user) => {
       tenant: user.tenant,
     },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || "6h" }
+    { expiresIn: process.env.JWT_EXPIRES_IN || "15m" }
+  );
+};
+
+const generateRefreshToken = (user) => {  
+  return jwt.sign(
+    { id: user.id,
+      email: user.email,
+      tenant: user.tenant,
+    },
+    process.env.REFRESH_JWT_SECRET,
+    { expiresIn: process.env.REFRESH_JWT_EXPIRES_IN || "3d" }
   );
 };
 
@@ -44,11 +55,13 @@ export const register = async (req, res) => {
 
     const newUser = result.rows[0];
     const token = generateToken(newUser);
+    const refreshToken = generateRefreshToken(newUser);
 
     res.status(201).json({
     message: "Rejestracja udana!",
     user: result.rows[0],
     token,
+    refreshToken,
     });
 
     } catch (err) {
@@ -81,6 +94,7 @@ export const login = async (req, res) => {
 
         // Генерація токена
         const token = generateToken(user);
+        const refreshToken = generateRefreshToken(user);
 
         // Отримати IP і User-Agent
         const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
@@ -89,14 +103,22 @@ export const login = async (req, res) => {
         // Оновити last_login і додати запис в user_logins
         await pool.query("UPDATE users SET last_login = NOW() WHERE id = $1", [user.id]);
         await pool.query(
-          "INSERT INTO user_logins (user_id, ip_address, user_agent) VALUES ($1, $2, $3)",
-          [user.id, ip, userAgent]
+          `INSERT INTO user_logins (user_id, ip_address, user_agent)
+           VALUES ($1, $2, $3)`,
+          [user.id, ip, userAgent, refreshToken]
+        );
+
+        await client.query(
+          `INSERT INTO user_refresh_tokens (user_id, token, user_agent, ip_address, expires_at)
+          VALUES ($1, $2, $3, $4, NOW() + interval '3 days')`,
+          [user.id, refreshToken, userAgent, ip]
         );
 
         // Якщо все ок, повертаємо дані юзера і токен
         res.json({
           message: "Użytkownik zalogowany!",
-            token,
+          token,
+          refreshToken,
           user: { id: user.id, email: user.email, name: user.username, role: user.role },
         });
     } catch (err) {
@@ -120,6 +142,52 @@ export const getProfile = async (req, res) => {
     } catch (err) {
       console.error("❌ Помилка при отриманні профілю:", err);
       res.status(500).json({ message: "Внутрішня помилка сервера" });
-    }
-  };
+    };
+};
+
+  // === REFRESH ===
+export const refreshToken = async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res.status(400).json({ message: "Brak tokena odświeżającego" });
+  }
+
+  try {
+      // Перевірка валідності refresh токена
+      const payload = jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET); 
+
+      // Перевірка, чи існує такий refresh токен в базі
+      const tokenResult = await pool.query(
+        "SELECT id FROM user_refresh_tokens WHERE token = $1 AND user_id = $2 AND expires_at > NOW()",
+        [refreshToken, payload.id]
+      );
+      if (tokenResult.rows.length === 0) {
+        return res.status(401).json({ message: "Nieprawidłowy token odświeżający" });
+      } 
+      // Генерація нового access токена
+      const user = { id: payload.id, email: payload.email, tenant: payload.tenant };
+      const newAccessToken = generateToken(user);
+      res.json({ token: newAccessToken });
+      } catch (err) {
+        console.error("Błąd pod czas odświeżania tokena:", err);
+        return res.status(401).json({ message: "Nieprawidłowy token odświeżający" });
+      }  
+};
+
+// === LOGOUT ===
+export const logout = async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res.status(400).json({ message: "Brak tokena odświeżającego" });
+  }
+  try {
+    // Видалення refresh токена з бази
+    await pool.query("DELETE FROM user_refresh_tokens WHERE refresh_token = $1", [refreshToken]);
+    res.json({ message: "Wylogowano pomyślnie" });
+  } catch (err) {
+    console.error("Błąd pod czas wylogowania:", err);
+    res.status(500).json({ message: "Wewnętrzny błąd serwera - logout" });
+  } 
+};
+
 
