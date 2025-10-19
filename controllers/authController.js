@@ -73,6 +73,7 @@ export const register = async (req, res) => {
 // Autoryzacja (logowanie)
 export const login = async (req, res) => {
   const { email, password, tenant } = req.body;
+  console.log("Login attempt:", email, tenant, req.body);
 
     if (!email || !password) {
         return res.status(400).json({ message: "Nie wypełnione Email lub hasło" });
