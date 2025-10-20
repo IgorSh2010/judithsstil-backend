@@ -12,7 +12,22 @@ export const tenantResolver = async (req, res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      // 🔹 Перевіряємо конкретні типи помилок
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({ message: "Token wygasł" });
+      }
+      if (err.name === "JsonWebTokenError") {
+        return res.status(401).json({ message: "Nieprawidłowy token" });
+      }
+      console.error("❌ JWT verification error:", err);
+      return res.status(401).json({ message: "Błąd weryfikacji tokenu" });
+    }
+    
     const tenantId = decoded.tenant;
 
     if (!tenantId) {

@@ -27,7 +27,7 @@ app.use(express.json());
 
 // Маршрути 
 app.use("/api/auth", authRoutes); 
-app.use("/users", userRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/products", products);
 
 // 🧑‍💻 Отримати поточного користувача
