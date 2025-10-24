@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
-//import { pool } from "../middleware/dbConn.js";
 import dotenv from "dotenv";
 
 dotenv.config();
