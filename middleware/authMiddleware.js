@@ -29,7 +29,6 @@ export const authenticateToken = (req, res, next) => {
     if (!decoded) return res.status(401).json({ message: "Недійсний токен або невалідний" });
 
     // підкладемо payload у req.user
-    console.log("Authenticated user ID:", decoded.id);
     req.user = decoded;
     next();
   } catch (err) {

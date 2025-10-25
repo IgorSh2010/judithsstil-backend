@@ -14,9 +14,9 @@ cloudinary.config({
 export const uploadImage = async (req, res) => {
   const client = req.dbClient;
   const file = req.file;
-  const type = req.type;
+  const type = req.body.type;
   const userId = req.user.id;
-  console.log("req:", req);
+  console.log("Uploading image for user ID:", userId, "Type:", type);
     if (!file) {
     return res.status(400).json({ message: "Brak pliku do wgrania." });
   }
