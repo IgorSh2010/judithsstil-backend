@@ -20,15 +20,6 @@ export const uploadImage = async (req, res) => {
     return res.status(400).json({ message: "Brak pliku do wgrania." });
   }
     try {
-    // Завантаження фото на Cloudinary
-    const shortName = uuidv4().slice(0, 18);
-    const uploadResult = await cloudinary.uploader.upload(file.path, {  
-        folder: `assets/${type}/`,
-        public_id: shortName, // Cloudinary сам додасть розширення
-        resource_type: "image",
-    });
-    fs.unlinkSync(file.path); // видалення тимчасового файлу
-
     // Збереження URL у базі
     const insertImageQuery = `
       INSERT INTO settings (user_id, ${type}_url, public_id, updated_at)
@@ -40,6 +31,16 @@ export const uploadImage = async (req, res) => {
         updated_at = NOW()
       RETURNING ${type}_url AS image_url;
     `;
+
+    // Завантаження фото на Cloudinary
+    const shortName = uuidv4().slice(0, 18);
+    const uploadResult = await cloudinary.uploader.upload(file.path, {  
+        folder: `assets/${type}/`,
+        public_id: shortName, // Cloudinary сам додасть розширення
+        resource_type: "image",
+    });
+    fs.unlinkSync(file.path); // видалення тимчасового файлу
+    
     const result = await client.query(insertImageQuery, [
       userId,
       uploadResult.secure_url,
