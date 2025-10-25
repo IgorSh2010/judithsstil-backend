@@ -59,7 +59,7 @@ app.get("/", (req, res) => {
 });
 
 // 🧪 Тестовий ендпоінт
-app.get("/test-db", async (req, res) => {
+/* app.get("/test-db", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW() AS current_time;")
     res.json({
@@ -70,7 +70,7 @@ app.get("/test-db", async (req, res) => {
     console.error("❌ Database connection error:", err)
     res.status(500).json({ error: "Database connection failed", details: err.message })
   }
-})
+}) */
 
 //app.listen(5000, () => console.log("🚀 Server running on port 5000"))
 
