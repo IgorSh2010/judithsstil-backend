@@ -38,14 +38,14 @@ export const uploadImage = async (req, res) => {
     console.log("Uploading file to Cloudinary:", file.path);
 
     // Завантаження фото на Cloudinary
-    const shortName = uuidv4().slice(0, 18);
-    const uploadResult = await cloudinary.uploader.upload(file.path, {  
-        folder: `assets/${type}/`,
-        public_id: shortName, // Cloudinary сам додасть розширення
-        resource_type: "image",
-    });
+    // const shortName = uuidv4().slice(0, 18);
+    // const uploadResult = await cloudinary.uploader.upload(file.path, {  
+    //     folder: `assets/${type}/`,
+    //     public_id: shortName, // Cloudinary сам додасть розширення
+    //     resource_type: "image",
+    // });
 
-      console.log("Upload Result:", uploadResult);
+    //   console.log("Upload Result:", uploadResult);
 
     fs.unlinkSync(file.path); // видалення тимчасового файлу
 
