@@ -80,7 +80,7 @@ export const uploadImage = async (req, res) => {
 
 export const getLogo = async (req, res) => {
   const client = req.dbClient;
-  
+
   try {
     const query = `
       SELECT logo_url AS logoUrl  
@@ -88,9 +88,9 @@ export const getLogo = async (req, res) => {
       WHERE logo_url IS NOT NULL;
     `;
     const result = await client.query(query);
-    if (result.rows.length === 0 || !result.rows[0].logourl) {
+    /* if (result.rows.length === 0 || !result.rows[0].logourl) {
       return res.status(404).json({ message: "Logo nie znalezione." });
-    }
+    } */
     res.json({ logoUrl: result.rows[0].logourl });
   } catch (err) {
     console.error("Błąd podczas pobierania logo:", err);
