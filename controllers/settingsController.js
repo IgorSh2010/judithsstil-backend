@@ -21,33 +21,46 @@ export const uploadImage = async (req, res) => {
     return res.status(400).json({ message: "Brak pliku do wgrania." });
   }
     try {
+    // Отримання старого public_id для видалення (якщо потрібно)
+     const oldImageQuery = `
+      SELECT ${type}_public_id AS public_id
+      FROM settings
+      WHERE id = $1;
+    `;
+    const oldImageResult = await client.query(oldImageQuery, [userId]);
+    const oldPublicId = oldImageResult.rows[0]?.public_id;
+
     // Збереження URL у базі
     console.log("Preparing to save image URL to database.");
     const insertImageQuery = `
-      INSERT INTO settings (user_id, ${type}_url, public_id, updated_at)
-      VALUES ($1, $2, $3, NOW())
-      ON CONFLICT (user_id)
+      INSERT INTO settings (id, ${type}_url, ${type}_public_id)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (id)
       DO UPDATE SET
         ${type}_url = EXCLUDED.${type}_url,
-        public_id = EXCLUDED.public_id,
+        ${type}_public_id = EXCLUDED.${type}_public_id,
         updated_at = NOW()
       RETURNING ${type}_url AS image_url;
     `;
-
     console.log("Insert Image Query:", insertImageQuery);
     console.log("Uploading file to Cloudinary:", file.path);
 
     // Завантаження фото на Cloudinary
-    // const shortName = uuidv4().slice(0, 18);
-    // const uploadResult = await cloudinary.uploader.upload(file.path, {  
-    //     folder: `assets/${type}/`,
-    //     public_id: shortName, // Cloudinary сам додасть розширення
-    //     resource_type: "image",
-    // });
+    const shortName = uuidv4().slice(0, 18);
+    const uploadResult = await cloudinary.uploader.upload(file.path, {  
+        folder: `assets/${userId}/`,
+        public_id: shortName, // Cloudinary сам додасть розширення
+        resource_type: "image",
+    });
 
-    //   console.log("Upload Result:", uploadResult);
+      console.log("Upload Result:", uploadResult);
 
     fs.unlinkSync(file.path); // видалення тимчасового файлу
+
+    if (oldPublicId) {
+      // Видалення старого зображення з Cloudinary
+      await cloudinary.uploader.destroy(oldPublicId);
+    }
 
     const result = await client.query(insertImageQuery, [
       userId,
