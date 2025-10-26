@@ -33,7 +33,7 @@ export const uploadImage = async (req, res) => {
     // Збереження URL у базі
     console.log("Preparing to save image URL to database.");
     const insertImageQuery = `
-      INSERT INTO settings (id, ${type}_url, ${type}_public_id)
+      INSERT INTO settings (user_id, ${type}_url, ${type}_public_id)
       VALUES ($1, $2, $3)
       ON CONFLICT (id)
       DO UPDATE SET
