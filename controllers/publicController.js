@@ -4,8 +4,10 @@ import { pool } from "../middleware/dbConn.js";
 dotenv.config();
 
 export const getLogo = async (req, res) => {
-  const host = req.get('origin');
-  console.log("Fetching logo for tenant:", host);
+  //В цій змінній зберігається домен орігін запиту по якому можна визначити тенанта
+  //для майбутніх змін коли лого буде зберігатися в різних схемах
+  //const host = req.get('origin');
+  //console.log("Fetching logo for tenant:", host);
 
   try {
     const query = `
