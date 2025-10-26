@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import { userUpdate } from "../controllers/userController.js";
-import { uploadImage, getLogo } from "../controllers/settingsController.js";
+import { uploadImage } from "../controllers/settingsController.js";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { tenantResolver } from "../middleware/tenantResolver.js";
 
