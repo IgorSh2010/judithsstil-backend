@@ -5,7 +5,7 @@ dotenv.config();
 
 export const getLogo = async (req, res) => {
   const client = req.dbClient;
-  console.log("Fetching logo for tenant:", req);
+  console.log("Fetching logo for tenant:", req.route.origin);
 
   try {
     const query = `
@@ -13,7 +13,7 @@ export const getLogo = async (req, res) => {
       FROM judithsstil.settings
       WHERE logo_url IS NOT NULL;
     `;
-    const result = await client.query(query);
+    const result = await pool.query(query);
     if (result.rows.length === 0 || !result.rows[0].logourl) {
       return NULL;
     }
