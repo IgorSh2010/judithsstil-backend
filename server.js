@@ -29,6 +29,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes); 
 app.use("/api/users", userRoutes);
 app.use("/api/products", products);
+app.use("/api/public", products);
 
 // 🧑‍💻 Отримати поточного користувача
 app.get("/api/me", authenticateToken, async (req, res) => {

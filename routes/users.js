@@ -10,7 +10,7 @@ const upload = multer({ dest: "tmp/" }); // тимчасова папка
 
 router.post("/update", authenticateToken, userUpdate); // 
 router.post("/upload-image", tenantResolver, authenticateToken, upload.single("image"), uploadImage);  
-router.get("/logo", tenantResolver, getLogo);
+
 
 // router.get("/admin-only", authMiddleware, requireRole("admin"), (req, res) => {
 //   res.json({ ok: true });
