@@ -4,8 +4,8 @@ import { pool } from "../middleware/dbConn.js";
 dotenv.config();
 
 export const getLogo = async (req, res) => {
-  const client = req.dbClient;
-  console.log("Fetching logo for tenant:", req.route.origin);
+  const host = req.get('host');
+  console.log("Fetching logo for tenant:", host);
 
   try {
     const query = `
