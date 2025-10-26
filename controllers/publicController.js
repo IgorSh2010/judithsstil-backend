@@ -25,3 +25,21 @@ export const getLogo = async (req, res) => {
     res.status(500).json({ message: "Błąd serwera podczas pobierania logo." });
   }
 };
+
+export const getBanner = async (req, res) => {
+  try {
+    const query = ` 
+        SELECT banner_url AS bannerUrl
+        FROM judithsstil.settings
+        WHERE banner_url IS NOT NULL;
+      `;
+    const result = await pool.query(query);
+    if (result.rows.length === 0 || !result.rows[0].bannerurl) {
+      return NULL;
+    }   
+    res.json({ bannerUrl: result.rows[0].bannerurl });
+    } catch (err) {
+        console.error("Błąd podczas pobierania banera:", err);
+        res.status(500).json({ message: "Błąd serwera podczas pobierania banera." });
+    }
+};
