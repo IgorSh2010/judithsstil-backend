@@ -10,7 +10,7 @@ export const getLogo = async (req, res) => {
   try {
     const query = `
       SELECT logo_url AS logoUrl  
-      FROM settings
+      FROM judithsstil.settings
       WHERE logo_url IS NOT NULL;
     `;
     const result = await client.query(query);
