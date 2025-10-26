@@ -5,6 +5,7 @@ import { authenticateToken } from "./middleware/authMiddleware.js";
 import authRoutes from "./routes/auth.js"; 
 import userRoutes from "./routes/users.js";
 import products from "./routes/products.js";
+import publicRoutes from "./routes/public.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -29,7 +30,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes); 
 app.use("/api/users", userRoutes);
 app.use("/api/products", products);
-app.use("/api/public", products);
+app.use("/api/public", publicRoutes);
 
 // 🧑‍💻 Отримати поточного користувача
 app.get("/api/me", authenticateToken, async (req, res) => {
