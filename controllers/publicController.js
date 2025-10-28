@@ -43,3 +43,20 @@ export const getBanner = async (req, res) => {
         res.status(500).json({ message: "Błąd serwera podczas pobierania banera." });
     }
 };
+
+export const getCategories = async (req, res) => {
+  try {
+    const query = ` 
+        SELECT id, name, slug
+        FROM judithsstil.product_categories;
+      `;
+    const result = await pool.query(query);
+    if (result.rows.length === 0 || !result.rows[0].name) {
+      return NULL;
+    }   
+    res.json({ id: result.rows[0].id, name: result.rows[0].name, slug: result.rows[0].slug });
+    } catch (err) {
+        console.error("Błąd podczas pobierania kategorji:", err);
+        res.status(500).json({ message: "Błąd serwera podczas pobierania kategorji." });
+    }
+};
