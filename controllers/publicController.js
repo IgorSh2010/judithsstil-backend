@@ -69,7 +69,7 @@ export const getProducts = async (req, res) => {
       FROM judithsstil.products p
       LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
       LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
-      GROUP BY p.id
+      GROUP BY p.id, pc.name
       ORDER BY p.created_at DESC;
     `;
     const result = await pool.query(query);
