@@ -72,7 +72,7 @@ export const getProducts = async (req, res) => {
       GROUP BY p.id
       ORDER BY p.created_at DESC;
     `;
-    const result = await client.query(query);
+    const result = await pool.query(query);
     const products = result.rows.map((p) => ({
       ...p,
       images: typeof p.images === "string" ? JSON.parse(p.images) : p.images
