@@ -174,6 +174,34 @@ export const updateProduct = async (req, res) => {
       return res.status(400).json({ message: "Brak danych do aktualizacji" });
     }
 
+    let categoryId = null;
+
+    // 🔸 якщо прийшла категорія як назва
+    if (updates.category) {
+      const categoryName = updates.category.trim();
+
+      // Перевіряємо, чи така категорія вже є
+      const catCheck = await pool.query(
+        `SELECT id FROM product_categories WHERE LOWER(name) = LOWER($1)`,
+        [categoryName]
+      );
+
+      if (catCheck.rows.length > 0) {
+        categoryId = catCheck.rows[0].id; // існує
+      } else {
+        // Створюємо нову категорію
+        const newCat = await pool.query(
+          `INSERT INTO product_categories (name, slug) VALUES ($1,$1) RETURNING id`,
+          [categoryName]
+        );
+        categoryId = newCat.rows[0].id;
+      }
+
+      // замінюємо у оновленнях category → category_id
+      delete updates.category;
+      updates.category_id = categoryId;
+    }
+
     // 🔸 Масиви для динамічного складання SQL
     const setClauses = [];
     const values = [];
