@@ -65,7 +65,7 @@ export const getProducts = async (req, res) => {
   try {
     const { id } = req.params;
     const { category } = req.query; // ✅ додаємо query параметр
-    
+    console.log("category", category);
     let products;
 
     // --- 🔹 Якщо запит з ID — повертаємо конкретний продукт
