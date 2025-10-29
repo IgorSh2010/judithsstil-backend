@@ -64,8 +64,11 @@ export const getCategories = async (req, res) => {
 export const getProducts = async (req, res) => {
   try {
     const { id } = req.params;
+    const { category } = req.query; // ✅ додаємо query параметр
+
     let products;
 
+    // --- 🔹 Якщо запит з ID — повертаємо конкретний продукт
     if (id) {
       const query = `
         SELECT 
@@ -74,6 +77,7 @@ export const getProducts = async (req, res) => {
           p.description, 
           p.price, 
           pc.name AS category, 
+          pc.slug AS category_slug,
           p.is_available, 
           p.sizes,
           COALESCE(
@@ -81,10 +85,10 @@ export const getProducts = async (req, res) => {
             '[]'
           ) AS images
         FROM judithsstil.products p
-          LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
-          LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
+        LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
+        LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
         WHERE p.id = $1
-        GROUP BY p.id, pc.name
+        GROUP BY p.id, pc.name, pc.slug
         ORDER BY p.created_at DESC;
       `;
       const result = await pool.query(query, [id]);
@@ -93,19 +97,28 @@ export const getProducts = async (req, res) => {
         return res.status(404).json({ message: "Produkt nie znaleziony" });
       }
 
-      products = result.rows[0];
-      products.images =
-        typeof products.images === "string"
-          ? JSON.parse(products.images)
-          : products.images;
-    } else {
-      const query = `
+      const product = result.rows[0];
+      product.images =
+        typeof product.images === "string"
+          ? JSON.parse(product.images)
+          : product.images;
+
+      return res.json(product);
+    }
+
+    // --- 🔹 Якщо є фільтр по категорії
+    let query;
+    let values = [];
+
+    if (category && category !== "all") {
+      query = `
         SELECT 
           p.id, 
           p.title AS name, 
           p.description, 
           p.price, 
           pc.name AS category, 
+          pc.slug AS category_slug,
           p.is_available, 
           p.sizes,
           COALESCE(
@@ -113,17 +126,42 @@ export const getProducts = async (req, res) => {
             '[]'
           ) AS images
         FROM judithsstil.products p
-          LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
-          LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
-        GROUP BY p.id, pc.name
+        LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
+        LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
+        WHERE pc.slug = $1
+        GROUP BY p.id, pc.name, pc.slug
         ORDER BY p.created_at DESC;
       `;
-      const result = await pool.query(query);
-      products = result.rows.map((p) => ({
-        ...p,
-        images: typeof p.images === "string" ? JSON.parse(p.images) : p.images,
-      }));
+      values = [category];
+    } else {
+      // --- 🔹 Без фільтра: всі продукти
+      query = `
+        SELECT 
+          p.id, 
+          p.title AS name, 
+          p.description, 
+          p.price, 
+          pc.name AS category, 
+          pc.slug AS category_slug,
+          p.is_available, 
+          p.sizes,
+          COALESCE(
+            json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), 
+            '[]'
+          ) AS images
+        FROM judithsstil.products p
+        LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
+        LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
+        GROUP BY p.id, pc.name, pc.slug
+        ORDER BY p.created_at DESC;
+      `;
     }
+
+    const result = await pool.query(query, values);
+    products = result.rows.map((p) => ({
+      ...p,
+      images: typeof p.images === "string" ? JSON.parse(p.images) : p.images,
+    }));
 
     res.json(products);
   } catch (err) {
