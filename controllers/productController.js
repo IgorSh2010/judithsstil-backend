@@ -191,7 +191,7 @@ export const updateProduct = async (req, res) => {
       } else {
         // Створюємо нову категорію
         const newCat = await client.query(
-          `INSERT INTO product_categories (name, slug) VALUES ($1,$1) RETURNING id`,
+          `INSERT INTO product_categories (name, slug) VALUES ($1,LOWER($1)) RETURNING id`,
           [categoryName]
         );
         categoryId = newCat.rows[0].id;
@@ -233,7 +233,8 @@ export const updateProduct = async (req, res) => {
     // 🔸 Оновлюємо тільки змінені поля
     const query = `
       UPDATE products
-      SET ${setClauses.join(", ")}
+      SET ${setClauses.join(", ")},
+          updated_at = NOW() 
       WHERE id = $${index}
       RETURNING *;
     `;

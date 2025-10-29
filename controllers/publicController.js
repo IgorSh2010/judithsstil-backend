@@ -54,7 +54,7 @@ export const getCategories = async (req, res) => {
     if (result.rows.length === 0 || !result.rows[0].name) {
       return NULL;
     }   
-    res.json({ id: result.rows[0].id, name: result.rows[0].name, slug: result.rows[0].slug });
+    res.json(result);
     } catch (err) {
         console.error("Błąd podczas pobierania kategorji:", err);
         res.status(500).json({ message: "Błąd serwera podczas pobierania kategorji." });
