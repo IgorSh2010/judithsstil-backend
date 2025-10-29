@@ -181,7 +181,7 @@ export const updateProduct = async (req, res) => {
       const categoryName = fields.category.trim();
 
       // Перевіряємо, чи така категорія вже є
-      const catCheck = await pool.query(
+      const catCheck = await client.query(
         `SELECT id FROM product_categories WHERE LOWER(name) = LOWER($1)`,
         [categoryName]
       );
@@ -190,7 +190,7 @@ export const updateProduct = async (req, res) => {
         categoryId = catCheck.rows[0].id; // існує
       } else {
         // Створюємо нову категорію
-        const newCat = await pool.query(
+        const newCat = await client.query(
           `INSERT INTO product_categories (name, slug) VALUES ($1,$1) RETURNING id`,
           [categoryName]
         );
