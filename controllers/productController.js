@@ -177,8 +177,8 @@ export const updateProduct = async (req, res) => {
     let categoryId = null;
 
     // 🔸 якщо прийшла категорія як назва
-    if (updates.category) {
-      const categoryName = updates.category.trim();
+    if (fields.category) {
+      const categoryName = fields.category.trim();
 
       // Перевіряємо, чи така категорія вже є
       const catCheck = await pool.query(
@@ -198,8 +198,8 @@ export const updateProduct = async (req, res) => {
       }
 
       // замінюємо у оновленнях category → category_id
-      delete updates.category;
-      updates.category_id = categoryId;
+      delete fields.category;
+      fields.category_id = categoryId;
     }
 
     // 🔸 Масиви для динамічного складання SQL
