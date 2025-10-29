@@ -61,29 +61,57 @@ export const getCategories = async (req, res) => {
     }
 };
 
-export const getProducts = async (req, res) => {    
+export const getProducts = async (req, res) => {
   try {
     const { id } = req.params;
+    let products;
 
-    if (id) 
-    {
+    if (id) {
       const query = `
-        SELECT p.id, p.title as name, p.description, p.price, pc.name as category, p.is_available, p.sizes
-          COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
+        SELECT 
+          p.id, 
+          p.title AS name, 
+          p.description, 
+          p.price, 
+          pc.name AS category, 
+          p.is_available, 
+          p.sizes,
+          COALESCE(
+            json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), 
+            '[]'
+          ) AS images
         FROM judithsstil.products p
           LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
           LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
-        WHERE
-          p.id = $1  
+        WHERE p.id = $1
         GROUP BY p.id, pc.name
         ORDER BY p.created_at DESC;
       `;
       const result = await pool.query(query, [id]);
-      const products = result.rows[0];
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Produkt nie znaleziony" });
+      }
+
+      products = result.rows[0];
+      products.images =
+        typeof products.images === "string"
+          ? JSON.parse(products.images)
+          : products.images;
     } else {
       const query = `
-        SELECT p.id, p.title as name, p.description, p.price, pc.name as category, p.is_available, p.sizes
-          COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
+        SELECT 
+          p.id, 
+          p.title AS name, 
+          p.description, 
+          p.price, 
+          pc.name AS category, 
+          p.is_available, 
+          p.sizes,
+          COALESCE(
+            json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), 
+            '[]'
+          ) AS images
         FROM judithsstil.products p
           LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
           LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
@@ -91,9 +119,9 @@ export const getProducts = async (req, res) => {
         ORDER BY p.created_at DESC;
       `;
       const result = await pool.query(query);
-      const products = result.rows.map((p) => ({
+      products = result.rows.map((p) => ({
         ...p,
-        images: typeof p.images === "string" ? JSON.parse(p.images) : p.images
+        images: typeof p.images === "string" ? JSON.parse(p.images) : p.images,
       }));
     }
 
