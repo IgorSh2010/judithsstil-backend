@@ -202,6 +202,10 @@ export const updateProduct = async (req, res) => {
       fields.category_id = categoryId;
     }
 
+    if (fields.sizes && Array.isArray(fields.sizes)) {
+      fields.sizes = `{${fields.sizes.map(s => `"${s}"`).join(",")}}`;
+    }
+
     // 🔸 Масиви для динамічного складання SQL
     const setClauses = [];
     const values = [];
