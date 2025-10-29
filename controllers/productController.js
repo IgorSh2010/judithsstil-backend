@@ -158,3 +158,71 @@ export const deleteProduct = async (req, res) => {
     res.status(500).json({ message: "Błąd serwera" });
   }
 };
+
+export const updateProduct = async (req, res) => {
+  const { id } = req.params;
+  const fields = req.body; // тут можуть бути будь-які поля, що змінюються
+
+  try {
+    if (!id) {
+      return res.status(400).json({ message: "Brak ID produktu" });
+    }
+
+    // якщо нічого не передано — повертаємо помилку
+    if (Object.keys(fields).length === 0) {
+      return res.status(400).json({ message: "Brak danych do aktualizacji" });
+    }
+
+    // 🔸 Масиви для динамічного складання SQL
+    const setClauses = [];
+    const values = [];
+    let index = 1;
+
+    for (const [key, value] of Object.entries(fields)) {
+      if (key === "images") continue; // зображення оновлюємо окремо нижче
+
+      // спец. випадок для sizes → JSON.stringify()
+      if (key === "sizes" && Array.isArray(value)) {
+        setClauses.push(`${key} = $${index}`);
+        values.push(JSON.stringify(value));
+      } else {
+        setClauses.push(`${key} = $${index}`);
+        values.push(value);
+      }
+      index++;
+    }
+
+    // 🔸 Якщо нічого не змінюється — вихід
+    if (setClauses.length === 0 && !fields.images) {
+      return res.status(400).json({ message: "Brak zmian do zapisania" });
+    }
+
+    // 🔸 Оновлюємо тільки змінені поля
+    const query = `
+      UPDATE judithsstil.products
+      SET ${setClauses.join(", ")}
+      WHERE id = $${index}
+      RETURNING *;
+    `;
+    values.push(id);
+
+    const result = await pool.query(query, values);
+
+    // 🔸 (опціонально) якщо оновлюємо зображення
+    /* if (fields.images && Array.isArray(fields.images)) {
+      await pool.query("DELETE FROM judithsstil.product_images WHERE product_id = $1", [id]);
+
+      const insertImages = `
+        INSERT INTO judithsstil.product_images (product_id, image_url)
+        VALUES ($1, unnest($2::text[]))
+      `;
+      await pool.query(insertImages, [id, fields.images]);
+    } */
+
+    res.json({ success: true, product: result.rows[0] });
+  } catch (err) {
+    console.error("❌ Błąd aktualizacji produktu:", err);
+    res.status(500).json({ message: "Błąd serwera" });
+  }
+};
+
