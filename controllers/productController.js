@@ -160,11 +160,12 @@ export const deleteProduct = async (req, res) => {
 };
 
 export const updateProduct = async (req, res) => {
-  const { id } = req.params;
+  const client = req.dbClient;
+  const productId = req.params.id;
   const fields = req.body; // тут можуть бути будь-які поля, що змінюються
 
   try {
-    if (!id) {
+    if (!productId) {
       return res.status(400).json({ message: "Brak ID produktu" });
     }
 
@@ -199,14 +200,14 @@ export const updateProduct = async (req, res) => {
 
     // 🔸 Оновлюємо тільки змінені поля
     const query = `
-      UPDATE judithsstil.products
+      UPDATE products
       SET ${setClauses.join(", ")}
       WHERE id = $${index}
       RETURNING *;
     `;
-    values.push(id);
+    values.push(productId);
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     // 🔸 (опціонально) якщо оновлюємо зображення
     /* if (fields.images && Array.isArray(fields.images)) {
