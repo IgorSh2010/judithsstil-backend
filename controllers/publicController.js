@@ -61,22 +61,42 @@ export const getCategories = async (req, res) => {
     }
 };
 
-export const getProducts = async (req, res) => {  
+export const getProducts = async (req, res) => {    
   try {
-    const query = `
-      SELECT p.id, p.title as name, p.description, p.price, pc.name as category, p.is_available,
-        COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
-      FROM judithsstil.products p
-      LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
-      LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
-      GROUP BY p.id, pc.name
-      ORDER BY p.created_at DESC;
-    `;
-    const result = await pool.query(query);
-    const products = result.rows.map((p) => ({
-      ...p,
-      images: typeof p.images === "string" ? JSON.parse(p.images) : p.images
-    }));
+    const { id } = req.params;
+
+    if (id) 
+    {
+      const query = `
+        SELECT p.id, p.title as name, p.description, p.price, pc.name as category, p.is_available, p.sizes
+          COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
+        FROM judithsstil.products p
+          LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
+          LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
+        WHERE
+          p.id = $1  
+        GROUP BY p.id, pc.name
+        ORDER BY p.created_at DESC;
+      `;
+      const result = await pool.query(query, [id]);
+      const products = result.rows[0];
+    } else {
+      const query = `
+        SELECT p.id, p.title as name, p.description, p.price, pc.name as category, p.is_available, p.sizes
+          COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
+        FROM judithsstil.products p
+          LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
+          LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
+        GROUP BY p.id, pc.name
+        ORDER BY p.created_at DESC;
+      `;
+      const result = await pool.query(query);
+      const products = result.rows.map((p) => ({
+        ...p,
+        images: typeof p.images === "string" ? JSON.parse(p.images) : p.images
+      }));
+    }
+
     res.json(products);
   } catch (err) {
     console.error("❌ Błąd pobierania produktów:", err);
