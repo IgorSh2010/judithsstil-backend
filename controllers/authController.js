@@ -182,7 +182,7 @@ export const logout = async (req, res) => {
   }
   try {
     // Видалення refresh токена з бази
-    await pool.query("DELETE FROM user_refresh_tokens WHERE refresh_token = $1", [refreshToken]);
+    await pool.query("DELETE FROM user_refresh_tokens WHERE token = $1", [refreshToken]);
     res.json({ message: "Wylogowano pomyślnie" });
   } catch (err) {
     console.error("Błąd pod czas wylogowania:", err);
