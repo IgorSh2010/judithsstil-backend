@@ -1,4 +1,5 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import { pool } from "./middleware/dbConn.js";
 import { authenticateToken } from "./middleware/authMiddleware.js"; 
@@ -24,6 +25,7 @@ app.use(cors({
               methods: ["GET", "POST", "PUT", "DELETE"],
               credentials: true,
             }));
+app.use(cookieParser());            
 app.use(express.json());
 
 // Маршрути 

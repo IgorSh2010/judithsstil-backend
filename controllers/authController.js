@@ -114,11 +114,18 @@ export const login = async (req, res) => {
           [user.id, refreshToken, userAgent, ip]
         );
 
+        // 🔹 Установка refreshToken у HttpOnly cookie
+        res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,       // ❌ недоступна з JavaScript
+          secure: true,         // ✅ тільки HTTPS
+          sameSite: "strict",   // ❌ не надсилається на інші домени
+          maxAge: 3 * 24 * 60 * 60 * 1000, // 3 дні
+        });
+
         // Якщо все ок, повертаємо дані юзера і токен
         res.json({
           message: "Użytkownik zalogowany!",
           token,
-          refreshToken,
           user: { id: user.id, email: user.email, name: user.username, role: user.role },
         });
     } catch (err) {
@@ -147,31 +154,39 @@ export const getProfile = async (req, res) => {
 
   // === REFRESH ===
 export const refreshToken = async (req, res) => {
-  const { refreshToken } = req.body;
-  if (!refreshToken) {
-    return res.status(400).json({ message: "Brak tokena odświeżającego" });
-  }
-
   try {
-      // Перевірка валідності refresh токена
-      const payload = jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET); 
+    const token = req.cookies?.refreshToken;
 
-      // Перевірка, чи існує такий refresh токен в базі
-      const tokenResult = await pool.query(
-        "SELECT id FROM user_refresh_tokens WHERE token = $1 AND user_id = $2 AND expires_at > NOW()",
-        [refreshToken, payload.id]
-      );
-      if (tokenResult.rows.length === 0) {
-        return res.status(401).json({ message: "Nieprawidłowy token odświeżający" });
-      } 
-      // Генерація нового access токена
-      const user = { id: payload.id, email: payload.email, tenant: payload.tenant };
-      const newAccessToken = generateToken(user);
-      res.json({ token: newAccessToken });
-      } catch (err) {
-        console.error("Błąd pod czas odświeżania tokena:", err);
-        return res.status(401).json({ message: "Nieprawidłowy token odświeżający" });
-      }  
+    if (!token) {
+      return res.status(401).json({ message: "Brak refresh tokena w ciasteczkach" });
+    }
+
+    // Перевірка refresh токена (чи справжній)
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+
+    // Перевірка чи токен існує у БД (тобто не відкликаний)
+    const result = await pool.query(
+      `SELECT urt.*, u.email, u.username, u.role
+       FROM user_refresh_tokens urt
+       JOIN users u ON urt.user_id = u.id
+       WHERE urt.token = $1 AND urt.expires_at > NOW()`,
+      [token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(403).json({ message: "Refresh token nieważny lub wygasł" });
+    }
+
+    const user = result.rows[0];
+
+    // Генеруємо новий короткоживучий токен доступу (accessToken)
+    const newAccessToken = generateToken(user);
+
+    res.json({ token: newAccessToken });
+  } catch (err) {
+    console.error("❌ Błąd podczas odświeżania tokena:", err);
+    res.status(401).json({ message: "Nieprawidłowy refresh token" });
+  }
 };
 
 // === LOGOUT ===
@@ -183,6 +198,7 @@ export const logout = async (req, res) => {
   try {
     // Видалення refresh токена з бази
     await pool.query("DELETE FROM user_refresh_tokens WHERE token = $1", [refreshToken]);
+    res.clearCookie("refreshToken");
     res.json({ message: "Wylogowano pomyślnie" });
   } catch (err) {
     console.error("Błąd pod czas wylogowania:", err);
