@@ -191,7 +191,7 @@ export const refreshToken = async (req, res) => {
 
 // === LOGOUT ===
 export const logout = async (req, res) => {
-  const { refreshToken } = req.body;
+  const { refreshToken } = req.cookies?.refreshToken;
   console.log("refreshToken-begin-----:", refreshToken)
   if (!refreshToken) {
     return res.status(400).json({ message: "Brak tokena odświeżającego" });
