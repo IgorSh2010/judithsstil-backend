@@ -57,11 +57,24 @@ export const register = async (req, res) => {
     const token = generateToken(newUser);
     const refreshToken = generateRefreshToken(newUser);
 
+    await pool.query(
+          `INSERT INTO user_refresh_tokens (user_id, token, user_agent, ip_address, expires_at)
+          VALUES ($1, $2, $3, $4, NOW() + interval '3 days')`,
+          [user.id, refreshToken, userAgent, ip]
+        );
+
+        // 🔹 Установка refreshToken у HttpOnly cookie
+        res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,       // ❌ недоступна з JavaScript
+          secure: true,         // ✅ тільки HTTPS
+          sameSite: "none",   // ✅ надсилається на інші домени
+          maxAge: 3 * 24 * 60 * 60 * 1000, // 3 дні
+        });
+
     res.status(201).json({
     message: "Rejestracja udana!",
     user: result.rows[0],
     token,
-    refreshToken,
     });
 
     } catch (err) {
