@@ -179,7 +179,7 @@ export const refreshToken = async (req, res) => {
 
     // Перевірка чи токен існує у БД (тобто не відкликаний)
     const result = await pool.query(
-      `SELECT urt.token, u.id, u.email, u.username, u.role
+      `SELECT urt.token, u.id, u.email, u.tenant, u.username, u.role
        FROM user_refresh_tokens urt
        JOIN users u ON urt.user_id = u.id
        WHERE urt.token = $1 AND urt.expires_at > NOW()`,
