@@ -247,6 +247,13 @@ export const updateProduct = async (req, res) => {
       await client.query(insertImageQuery, params);
     }
 
+    if (req.body.removedImages?.length) {
+      for (const img of req.body.removedImages) {
+        await client.query(`DELETE FROM product_images WHERE public_id = $1`, [img.public_id]);
+        await cloudinary.uploader.destroy(img.public_id);
+      }
+    }
+
     res.json({ success: true, product: result.rows[0] });
   } catch (err) {
     console.error("❌ Błąd aktualizacji produktu:", err);
