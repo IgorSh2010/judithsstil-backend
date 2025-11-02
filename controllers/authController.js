@@ -118,7 +118,7 @@ export const login = async (req, res) => {
         res.cookie("refreshToken", refreshToken, {
           httpOnly: false,       // ❌ недоступна з JavaScript
           secure: true,         // ✅ тільки HTTPS
-          sameSite: "strict",   // ❌ не надсилається на інші домени
+          sameSite: "none",   // ✅ надсилається на інші домени
           maxAge: 3 * 24 * 60 * 60 * 1000, // 3 дні
         });
 
