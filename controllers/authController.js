@@ -116,7 +116,7 @@ export const login = async (req, res) => {
 
         // 🔹 Установка refreshToken у HttpOnly cookie
         res.cookie("refreshToken", refreshToken, {
-          httpOnly: false,       // ❌ недоступна з JavaScript
+          httpOnly: true,       // ❌ недоступна з JavaScript
           secure: true,         // ✅ тільки HTTPS
           sameSite: "none",   // ✅ надсилається на інші домени
           maxAge: 3 * 24 * 60 * 60 * 1000, // 3 дні
@@ -192,13 +192,11 @@ export const refreshToken = async (req, res) => {
 // === LOGOUT ===
 export const logout = async (req, res) => {
   const refreshToken = req.cookies?.refreshToken;
-  console.log("refreshToken-begin-----:", refreshToken)
   if (!refreshToken) {
     return res.status(400).json({ message: "Brak tokena odświeżającego" });
   }
   try {
     // Видалення refresh токена з бази
-    console.log("refreshToken-try-----:", refreshToken)
     await pool.query("DELETE FROM user_refresh_tokens WHERE token = $1", [refreshToken]);
     res.clearCookie("refreshToken");
     res.json({ message: "Wylogowano pomyślnie" });
