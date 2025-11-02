@@ -192,12 +192,13 @@ export const refreshToken = async (req, res) => {
 // === LOGOUT ===
 export const logout = async (req, res) => {
   const { refreshToken } = req.body;
+  console.log("refreshToken-begin-----:", refreshToken)
   if (!refreshToken) {
     return res.status(400).json({ message: "Brak tokena odświeżającego" });
   }
   try {
     // Видалення refresh токена з бази
-    console.log("refreshToken-----:", refreshToken)
+    console.log("refreshToken-try-----:", refreshToken)
     await pool.query("DELETE FROM user_refresh_tokens WHERE token = $1", [refreshToken]);
     res.clearCookie("refreshToken");
     res.json({ message: "Wylogowano pomyślnie" });
