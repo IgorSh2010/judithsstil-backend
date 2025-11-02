@@ -236,9 +236,21 @@ export const updateProduct = async (req, res) => {
     if (fields.removedImages && Array.isArray(fields.removedImages) && fields.removedImages.length > 0) {
       for (const img of fields.removedImages) {
         try {
-          console.log("img--", img);
-          await cloudinary.uploader.destroy(img.public_id);
-          await client.query(`DELETE FROM product_images WHERE public_id = $1`, [img.public_id]);
+          if (typeof img === "string" && img.startsWith("[")) {
+            img = JSON.parse(img);
+          }
+
+          // Якщо це масив URLів (наприклад, ["https://...","https://..."])
+          const urls = Array.isArray(img) ? img : [img];
+
+          for (const url of urls) {
+            const match = url.match(/\/upload\/(?:v\d+\/)?(.+?)\.[a-zA-Z]+$/);
+            if (!match) continue;
+
+            const publicId = match[1]; // => products/9/bf8edf38-1b18-4d70
+          await cloudinary.uploader.destroy(publicId);
+          await client.query(`DELETE FROM product_images WHERE public_id = $1`, [publicId]);
+          }
         } catch (err) {
           console.warn(`⚠️ Nie udało się usunąć obrazu ${img.public_id}:`, err);
         }
