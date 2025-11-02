@@ -147,7 +147,7 @@ export const updateProduct = async (req, res) => {
     if (!productId) {
       return res.status(400).json({ message: "Brak ID produktu" });
     }
-
+    console.log("req.body.removedImages-----", req.body.removedImages)
     // Якщо взагалі нічого не передано
     if (!fields && (!files || files.length === 0)) {
       return res.status(400).json({ message: "Brak danych do aktualizacji" });
