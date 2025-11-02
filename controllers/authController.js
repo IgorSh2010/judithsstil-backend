@@ -197,6 +197,7 @@ export const logout = async (req, res) => {
   }
   try {
     // Видалення refresh токена з бази
+    console.log("refreshToken-----:", refreshToken)
     await pool.query("DELETE FROM user_refresh_tokens WHERE token = $1", [refreshToken]);
     res.clearCookie("refreshToken");
     res.json({ message: "Wylogowano pomyślnie" });
