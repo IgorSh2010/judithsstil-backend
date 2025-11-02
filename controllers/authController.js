@@ -175,7 +175,7 @@ export const refreshToken = async (req, res) => {
     }
 
     // Перевірка refresh токена (чи справжній)
-    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    const decoded = jwt.verify(token, process.env.REFRESH_JWT_SECRET);
 
     // Перевірка чи токен існує у БД (тобто не відкликаний)
     const result = await pool.query(
