@@ -78,7 +78,7 @@ export const getProducts = async (req, res) => {
   const client = req.dbClient;  
   try {
     const query = `
-      SELECT p.id, p.title, p.description, p.price, p.is_available,
+      SELECT p.id, p.title, p.description, p.price, p.is_available, p.is_bestseller, p.is_featured,
         COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
       FROM products p
       LEFT JOIN product_images pi ON p.id = pi.product_id
