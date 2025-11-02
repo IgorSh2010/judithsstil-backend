@@ -97,35 +97,6 @@ export const getProducts = async (req, res) => {
   }
 };
 
-export const changeAvailability = async (req, res) => {
-  const client = req.dbClient;
-  const productId = req.params.id;
-  const { available } = req.body; 
-
-  try {
-    const query = `
-      UPDATE products 
-      SET is_available = $1,
-          updated_at = NOW() 
-      WHERE id = $2
-      RETURNING id, is_available;
-    `;
-    const result = await client.query(query, [available, productId]);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Produkt nie znaleziony." });
-    } 
-
-    res.json({
-      message: "Dostępność produktu zaktualizowana.",
-      product: result.rows[0],
-    });
-  } catch (err) {
-    console.error("❌ Błąd zmiany dostępności produktu:", err);
-    res.status(500).json({ message: "Błąd serwera" });
-  }
-};
-
 export const deleteProduct = async (req, res) => {
   const client = req.dbClient;
   const productId = req.params.id;
@@ -243,15 +214,38 @@ export const updateProduct = async (req, res) => {
     const result = await client.query(query, values);
 
     // 🔸 (опціонально) якщо оновлюємо зображення
-    /* if (fields.images && Array.isArray(fields.images)) {
-      await pool.query("DELETE FROM judithsstil.product_images WHERE product_id = $1", [id]);
+    // Завантажуємо фото на Cloudinary
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const shortName = uuidv4().slice(0, 18); // типу "f2a4c1e8b9"
+        const uploadResult = await cloudinary.uploader.upload(file.path, {
+          folder: `products/${productId}`,
+          public_id: shortName, // Cloudinary сам додасть розширення
+          resource_type: "image",
+        });
 
-      const insertImages = `
-        INSERT INTO judithsstil.product_images (product_id, image_url)
-        VALUES ($1, unnest($2::text[]))
+        uploaded.push({
+                            url: uploadResult.secure_url,
+                            public_id: uploadResult.public_id,
+                          });
+        fs.unlinkSync(file.path); // видалення тимчасового файлу
+      }
+    }
+
+    // Зберігаємо URL у базі
+    if (uploaded.length > 0) {
+      const insertImageQuery = `
+        INSERT INTO product_images (product_id, image_url, public_id)
+        VALUES ${uploaded.map((_, i) => `($1, $${i * 2 + 2}, $${i * 2 + 3})`).join(", ")} 
       `;
-      await pool.query(insertImages, [id, fields.images]);
-    } */
+
+      const params = [productId];
+      uploaded.forEach((img) => {
+        params.push(img.url, img.public_id);
+      });
+      
+      await client.query(insertImageQuery, params);
+    }
 
     res.json({ success: true, product: result.rows[0] });
   } catch (err) {
