@@ -122,6 +122,8 @@ export const getProducts = async (req, res) => {
           pc.name AS category, 
           pc.slug AS category_slug,
           p.is_available, 
+          p.is_bestseller,
+          p.is_featured,
           p.sizes,
           COALESCE(
             json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), 
@@ -146,6 +148,8 @@ export const getProducts = async (req, res) => {
           pc.name AS category, 
           pc.slug AS category_slug,
           p.is_available, 
+          p.is_bestseller,
+          p.is_featured,
           p.sizes,
           COALESCE(
             json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), 
