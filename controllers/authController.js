@@ -116,7 +116,7 @@ export const login = async (req, res) => {
 
         // 🔹 Установка refreshToken у HttpOnly cookie
         res.cookie("refreshToken", refreshToken, {
-          httpOnly: true,       // ❌ недоступна з JavaScript
+          httpOnly: false,       // ❌ недоступна з JavaScript
           secure: true,         // ✅ тільки HTTPS
           sameSite: "strict",   // ❌ не надсилається на інші домени
           maxAge: 3 * 24 * 60 * 60 * 1000, // 3 дні
