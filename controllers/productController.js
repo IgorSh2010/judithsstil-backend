@@ -234,14 +234,17 @@ export const updateProduct = async (req, res) => {
 
     // 🔸 Видалення зображень
     if (fields.removedImages && Array.isArray(fields.removedImages) && fields.removedImages.length > 0) {
-      for (const img of fields.removedImages) {
+      for (let rawImg of fields.removedImages) {
         try {
-          if (typeof img === "string" && img.startsWith("[")) {
-            img = JSON.parse(img);
+          let parsed = rawImg;
+
+          // Якщо це JSON-рядок (наприклад: '["https://..."]')
+          if (typeof parsed === "string" && parsed.startsWith("[")) {
+            parsed = JSON.parse(parsed);
           }
 
-          // Якщо це масив URLів (наприклад, ["https://...","https://..."])
-          const urls = Array.isArray(img) ? img : [img];
+          // Якщо parsed — масив, то перебираємо всі URL
+          const urls = Array.isArray(parsed) ? parsed : [parsed];
 
           for (const url of urls) {
             const match = url.match(/\/upload\/(?:v\d+\/)?(.+?)\.[a-zA-Z]+$/);
@@ -252,7 +255,7 @@ export const updateProduct = async (req, res) => {
           await client.query(`DELETE FROM product_images WHERE public_id = $1`, [publicId]);
           }
         } catch (err) {
-          console.warn(`⚠️ Nie udało się usunąć obrazu ${img.public_id}:`, err);
+          console.warn(`⚠️ Nie udało się usunąć obrazu ${publicId}:`, err);
         }
       }
     }
