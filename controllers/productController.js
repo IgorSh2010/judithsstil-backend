@@ -135,6 +135,13 @@ export const updateProduct = async (req, res) => {
   const productId = req.params.id;
   const fields = req.body;
   const files = req.files;
+  if (req.body.removedImages) {
+    try {
+      req.body.removedImages = JSON.parse(req.body.removedImages);
+    } catch {
+      req.body.removedImages = [];
+    }
+  }
   
   try {
     if (!productId) {
