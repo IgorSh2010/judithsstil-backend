@@ -135,19 +135,12 @@ export const updateProduct = async (req, res) => {
   const productId = req.params.id;
   const fields = req.body;
   const files = req.files;
-  /* if (req.body.removedImages) {
-    try {
-      req.body.removedImages = JSON.parse(req.body.removedImages);
-    } catch {
-      req.body.removedImages = [];
-    }
-  } */
-  
+    
   try {
     if (!productId) {
       return res.status(400).json({ message: "Brak ID produktu" });
     }
-    console.log("req.body.removedImages-----", req.body.removedImages)
+    
     // Якщо взагалі нічого не передано
     if (!fields && (!files || files.length === 0)) {
       return res.status(400).json({ message: "Brak danych do aktualizacji" });
@@ -243,6 +236,7 @@ export const updateProduct = async (req, res) => {
     if (fields.removedImages && Array.isArray(fields.removedImages) && fields.removedImages.length > 0) {
       for (const img of fields.removedImages) {
         try {
+          console.log("img--", img);
           await cloudinary.uploader.destroy(img.public_id);
           await client.query(`DELETE FROM product_images WHERE public_id = $1`, [img.public_id]);
         } catch (err) {
