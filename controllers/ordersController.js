@@ -2,7 +2,7 @@ export const getClientOrder = async (req, res) => {
     const { id } = req.params;
     const client = req.dbClient;
     try {
-        if (id) {
+        if (id !== "main") {
             const result = await client.query(`SELECT o.*, os.label as status_label  FROM orders o
                                                 left join order_statuses os 
                                                     on o.status_id = os.id 
