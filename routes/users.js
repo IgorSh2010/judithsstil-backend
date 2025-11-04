@@ -13,6 +13,7 @@ router.post("/update", authenticateToken, userUpdate); //
 router.post("/upload-image", tenantResolver, authenticateToken, upload.single("image"), uploadImage);  
 router.get("/get-image", tenantResolver, authenticateToken, getImage);
 router.get("/client-order", tenantResolver, authenticateToken, getClientOrder);
+router.get("/client-order/:id", tenantResolver, authenticateToken, getClientOrder);
 
 
 // router.get("/admin-only", authMiddleware, requireRole("admin"), (req, res) => {

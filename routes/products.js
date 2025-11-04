@@ -8,10 +8,10 @@ const router = express.Router();
 const upload = multer({ dest: "tmp/" }); // тимчасова папка
 
 router.post("/create", tenantResolver, authenticateToken, upload.array("images", 8), createProduct);
-router.get("/get", tenantResolver, getProducts); //authenticateToken
+router.get("/get", tenantResolver, authenticateToken, getProducts);
 //router.put("/:id/availability", tenantResolver, changeAvailability); 
 router.put("/update/:id", tenantResolver, authenticateToken, upload.array("images", 7), updateProduct);
 //router.put("upload-image/:id", tenantResolver, authenticateToken,  uploadImages);
-router.delete("/:id", tenantResolver, authenticateToken, deleteProduct); //authenticateToken 
+router.delete("/:id", tenantResolver, authenticateToken, deleteProduct); 
 
 export default router;
