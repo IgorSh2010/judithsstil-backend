@@ -10,6 +10,12 @@ export const getClientOrder = async (req, res) => {
 
             const orderResult = await client.query(orderQuery, [id]); 
 
+            if (orderResult.rows.length === 0) {
+                return res.status(404).json({ message: "Zamówienie nie znalezione." });
+            }
+
+            const order = orderResult.rows[0];
+
             const itemsQuery = `
                                 SELECT 
                                 oi.id,
@@ -31,7 +37,7 @@ export const getClientOrder = async (req, res) => {
                 history: null, //historyResult.rows,
                 payment: null, //paymentResult.rows[0] || null,
             });
-            
+
         } else {
             const result = await client.query(`SELECT o.*, os.label as status_label  FROM orders o
                                                 left join order_statuses os 
