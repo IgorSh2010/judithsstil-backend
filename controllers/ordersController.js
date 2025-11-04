@@ -20,7 +20,7 @@ export const getClientOrder = async (req, res) => {
                                 SELECT 
                                 oi.id,
                                 p.id AS product_id,
-                                p.name,
+                                p.title,
                                 p.price AS product_price,
                                 oi.quantity,
                                 oi.price AS item_price,
