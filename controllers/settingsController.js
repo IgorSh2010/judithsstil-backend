@@ -71,3 +71,14 @@ export const uploadImage = async (req, res) => {
     res.status(500).json({ message: "Błąd serwera podczas wgrywania obrazu." });
   } 
 }; 
+
+export const getImage = async (req, res) => { 
+  try {
+    const { rows } = await client.query("SELECT banner_url, logo_url FROM settings where banner_url is not null and logo_url is not null LIMIT 1");
+    res.json(rows[0]);
+  } catch (err) {
+    console.error("Error fetching settings:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
