@@ -72,7 +72,9 @@ export const uploadImage = async (req, res) => {
   } 
 }; 
 
-export const getImage = async (req, res) => { 
+export const getImage = async (req, res) => {
+  const client = req.dbClient;
+   
   try {
     const { rows } = await client.query("SELECT banner_url, logo_url FROM settings where banner_url is not null and logo_url is not null LIMIT 1");
     res.json(rows[0]);
