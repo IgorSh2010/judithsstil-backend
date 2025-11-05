@@ -17,7 +17,7 @@ export const getLogo = async (req, res) => {
     `;
     const result = await pool.query(query);
     if (result.rows.length === 0 || !result.rows[0].logourl) {
-      return NULL;
+      return res.status(404).json({ message: "Brak ścieżki do logo" });
     }
     res.json({ logoUrl: result.rows[0].logourl });
   } catch (err) {
@@ -35,7 +35,7 @@ export const getBanner = async (req, res) => {
       `;
     const result = await pool.query(query);
     if (result.rows.length === 0 || !result.rows[0].bannerurl) {
-      return NULL;
+      return res.status(404).json({ message: "Brak ścieżki do banera" });
     }   
     res.json({ bannerUrl: result.rows[0].bannerurl });
     } catch (err) {
@@ -52,7 +52,7 @@ export const getCategories = async (req, res) => {
       `;
     const result = await pool.query(query);
     if (result.rows.length === 0 || !result.rows[0].name) {
-      return NULL;
+      return res.status(404).json({ message: "Brak kategorji" });
     }   
     res.json(result);
     } catch (err) {
@@ -175,3 +175,17 @@ export const getProducts = async (req, res) => {
     res.status(500).json({ message: "Błąd serwera" });
   }
 };
+
+export const getTest = async (req, res) => {
+  try {
+    const result = await pool.query("SELECT NOW() AS current_time;")
+    res.json({
+      message: "✅ Connected to PostgreSQL!",
+      time: result.rows[0].current_time,
+    })
+  } catch (err) {
+    console.error("❌ Database connection error:", err)
+    res.status(500).json({ error: "Database connection failed", details: err.message })
+  }
+};
+

@@ -1,7 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import { pool } from "./middleware/dbConn.js";
 import { authenticateToken } from "./middleware/authMiddleware.js"; 
 import authRoutes from "./routes/auth.js"; 
 import userRoutes from "./routes/users.js";
@@ -20,16 +19,16 @@ dotenv.config();
 */
 
 const app = express();
-/* app.use(cors({
+app.use(cors({
               origin: ['http://localhost:3000', 'https://judithsstil.vercel.app'],
               methods: ["GET", "POST", "PUT", "DELETE"],
               credentials: true,
-            })); */
+            }));
 app.use(cookieParser());            
 app.use(express.json());
 
 // 🔹 CORS 
-app.use((req, res, next) => {
+/* app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", req.headers.origin);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -39,7 +38,7 @@ app.use((req, res, next) => {
   }
   next();
 });
-
+ */
 // Маршрути
 app.use("/api/auth", authRoutes); 
 app.use("/api/users", userRoutes);
@@ -55,19 +54,7 @@ app.get("/", (req, res) => {
   res.send("Backend API працює ✅🚀");
 });
 
-// 🧪 Тестовий ендпоінт
-/* app.get("/test-db", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT NOW() AS current_time;")
-    res.json({
-      message: "✅ Connected to PostgreSQL!",
-      time: result.rows[0].current_time,
-    })
-  } catch (err) {
-    console.error("❌ Database connection error:", err)
-    res.status(500).json({ error: "Database connection failed", details: err.message })
-  }
-}) */
+
 
 //app.listen(5000, () => console.log("🚀 Server running on port 5000"))
 
