@@ -57,4 +57,22 @@ export const userUpdate = async (req, res) => {
   }
 };
 
+export const getMe = async (req, res) => {
+  try {
+    // req.user.id — це id користувача з токена
+    const result = await pool.query(
+      "SELECT id, email, username, tenant, phone, adress, role FROM users WHERE id = $1",
+      [req.user.id]
+    );
+
+    if (result.rows.length === 0)
+      return res.status(404).json({ message: "User not founded!" });
+
+    res.json({ user: result.rows[0] });
+  } catch (err) {
+    console.error("❌ Помилка при отриманні користувача:", err);
+    res.status(500).json({ message: "Помилка сервера", error: err.message });
+  }
+}
+
 

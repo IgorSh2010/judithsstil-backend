@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { userUpdate } from "../controllers/userController.js";
+import { userUpdate, getMe } from "../controllers/userController.js";
 import { uploadImage, getImage } from "../controllers/settingsController.js";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { tenantResolver } from "../middleware/tenantResolver.js";
@@ -14,6 +14,9 @@ router.post("/upload-image", tenantResolver, authenticateToken, upload.single("i
 router.get("/get-image", tenantResolver, authenticateToken, getImage);
 //router.get("/client-order", tenantResolver, authenticateToken, getClientOrder);
 router.get("/client-order/:id", tenantResolver, authenticateToken, getClientOrder);
+
+// 🧑‍💻 Отримати поточного користувача
+router.get("/me", authenticateToken, getMe);
 
 
 // router.get("/admin-only", authMiddleware, requireRole("admin"), (req, res) => {
