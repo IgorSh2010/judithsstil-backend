@@ -21,12 +21,14 @@ export const getClientOrder = async (req, res) => {
                                 oi.id,
                                 p.id AS product_id,
                                 p.title,
+                                pi.image_url,
                                 p.price AS product_price,
                                 oi.quantity,
                                 oi.price AS item_price,
                                 (oi.quantity * oi.price) AS total_item
-                                FROM judithsstil.order_items oi
-                                JOIN judithsstil.products p ON p.id = oi.product_id
+                                FROM order_items oi
+                                left JOIN products p ON p.id = oi.product_id
+                                left JOIN product_images pi ON pi.product_id = oi.product_id
                                 WHERE oi.order_id = $1
                             `;
             const itemsResult = await client.query(itemsQuery, [id]);
