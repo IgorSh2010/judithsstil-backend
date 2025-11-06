@@ -6,6 +6,7 @@ dotenv.config();
 
 export const userUpdate = async (req, res) => {
   const { username, email, phone, adress, password } = req.body;
+  client = await pool.acquire()
 
   if (!req.user) {
     return res.status(401).json({ message: "Nieautoryzowany" });
@@ -60,6 +61,8 @@ export const userUpdate = async (req, res) => {
 };
 
 export const getMe = async (req, res) => {
+  client = await pool.acquire();
+
   try {
     // req.user.id — це id користувача з токена
     const result = await pool.query(
