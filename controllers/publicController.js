@@ -23,7 +23,9 @@ export const getLogo = async (req, res) => {
   } catch (err) {
     console.error("Błąd podczas pobierania logo:", err);
     res.status(500).json({ message: "Błąd serwera podczas pobierania logo." });
-  }
+  } finally {
+      pool.release(); // ← обов’язково
+    }
 };
 
 export const getBanner = async (req, res) => {
@@ -41,6 +43,8 @@ export const getBanner = async (req, res) => {
     } catch (err) {
         console.error("Błąd podczas pobierania banera:", err);
         res.status(500).json({ message: "Błąd serwera podczas pobierania banera." });
+    } finally {
+      pool.release(); // ← обов’язково
     }
 };
 
@@ -58,6 +62,8 @@ export const getCategories = async (req, res) => {
     } catch (err) {
         console.error("Błąd podczas pobierania kategorji:", err);
         res.status(500).json({ message: "Błąd serwera podczas pobierania kategorji." });
+    } finally {
+      pool.release(); // ← обов’язково
     }
 };
 
@@ -173,7 +179,9 @@ export const getProducts = async (req, res) => {
   } catch (err) {
     console.error("❌ Błąd pobierania produktów:", err);
     res.status(500).json({ message: "Błąd serwera" });
-  }
+  } finally {
+      pool.release(); // ← обов’язково
+    }
 };
 
 export const getTest = async (req, res) => {
@@ -186,6 +194,8 @@ export const getTest = async (req, res) => {
   } catch (err) {
     console.error("❌ Database connection error:", err)
     res.status(500).json({ error: "Database connection failed", details: err.message })
-  }
+  } finally {
+      pool.release(); // ← обов’язково
+    }
 };
 

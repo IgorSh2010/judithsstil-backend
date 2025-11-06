@@ -80,6 +80,8 @@ export const register = async (req, res) => {
     } catch (err) {
       console.error("Błąd pod czas rejestracji:", err);
       res.status(500).json({ message: "Wewnętrny błąd serwera" });
+    } finally {
+      client.release(); // ← обов’язково
     }
   };
 
@@ -144,6 +146,8 @@ export const login = async (req, res) => {
     } catch (err) {
       console.error("Błąd pod czas logowania:", err);
       res.status(500).json({ message: "Wewnętrny błąd serwera - login" });
+    } finally {
+      client.release(); // ← обов’язково
     }
     };
 
@@ -162,6 +166,8 @@ export const getProfile = async (req, res) => {
     } catch (err) {
       console.error("❌ Помилка при отриманні профілю:", err);
       res.status(500).json({ message: "Внутрішня помилка сервера" });
+    } finally {
+      client.release(); // ← обов’язково
     };
 };
 
@@ -199,7 +205,9 @@ export const refreshToken = async (req, res) => {
   } catch (err) {
     console.error("❌ Błąd podczas odświeżania tokena:", err);
     res.status(401).json({ message: "Nieprawidłowy refresh token" });
-  }
+  } finally {
+      client.release(); // ← обов’язково
+    }
 };
 
 // === LOGOUT ===
@@ -216,7 +224,9 @@ export const logout = async (req, res) => {
   } catch (err) {
     console.error("Błąd pod czas wylogowania:", err);
     res.status(500).json({ message: "Wewnętrzny błąd serwera - logout" });
-  } 
+  }  finally {
+      client.release(); // ← обов’язково
+    }
 };
 
 

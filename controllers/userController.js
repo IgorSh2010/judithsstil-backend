@@ -54,7 +54,9 @@ export const userUpdate = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Błąd serwera" });
-  }
+  } finally {
+      client.release(); // ← обов’язково
+    }
 };
 
 export const getMe = async (req, res) => {
@@ -72,7 +74,9 @@ export const getMe = async (req, res) => {
   } catch (err) {
     console.error("❌ Помилка при отриманні користувача:", err);
     res.status(500).json({ message: "Помилка сервера", error: err.message });
-  }
+  } finally {
+      client.release(); // ← обов’язково
+    }
 }
 
 
