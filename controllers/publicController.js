@@ -8,7 +8,6 @@ export const getLogo = async (req, res) => {
   //для майбутніх змін коли лого буде зберігатися в різних схемах
   //const host = req.get('origin');
   //console.log("Fetching logo for tenant:", host);
-  client = await pool.acquire();
 
   try {
     const query = `
@@ -24,13 +23,10 @@ export const getLogo = async (req, res) => {
   } catch (err) {
     console.error("Błąd podczas pobierania logo:", err);
     res.status(500).json({ message: "Błąd serwera podczas pobierania logo." });
-  } finally {
-      client.release(); // ← обов’язково
-    }
+  } 
 };
 
 export const getBanner = async (req, res) => {
-  client = await pool.acquire();
   try {
     const query = ` 
         SELECT banner_url AS bannerUrl
@@ -45,13 +41,10 @@ export const getBanner = async (req, res) => {
     } catch (err) {
         console.error("Błąd podczas pobierania banera:", err);
         res.status(500).json({ message: "Błąd serwera podczas pobierania banera." });
-    } finally {
-      client.release(); // ← обов’язково
-    }
+    } 
 };
 
 export const getCategories = async (req, res) => {
-  client = await pool.acquire();
   try {
     const query = ` 
         SELECT id, name, slug
@@ -65,13 +58,10 @@ export const getCategories = async (req, res) => {
     } catch (err) {
         console.error("Błąd podczas pobierania kategorji:", err);
         res.status(500).json({ message: "Błąd serwera podczas pobierania kategorji." });
-    } finally {
-      client.release(); // ← обов’язково
-    }
+    } 
 };
 
 export const getProducts = async (req, res) => {
-  client = await pool.acquire();
   try {
     const { id } = req.params;
     const { category } = req.query; // ✅ додаємо query параметр
@@ -183,13 +173,10 @@ export const getProducts = async (req, res) => {
   } catch (err) {
     console.error("❌ Błąd pobierania produktów:", err);
     res.status(500).json({ message: "Błąd serwera" });
-  } finally {
-      client.release(); // ← обов’язково
-    }
+  }
 };
 
 export const getTest = async (req, res) => {
-  client = await pool.acquire();
   try {
     const result = await pool.query("SELECT NOW() AS current_time;")
     res.json({
@@ -199,8 +186,6 @@ export const getTest = async (req, res) => {
   } catch (err) {
     console.error("❌ Database connection error:", err)
     res.status(500).json({ error: "Database connection failed", details: err.message })
-  } finally {
-      client.release(); // ← обов’язково
-    }
+  }
 };
 

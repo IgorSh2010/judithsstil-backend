@@ -6,7 +6,6 @@ dotenv.config();
 
 export const userUpdate = async (req, res) => {
   const { username, email, phone, adress, password } = req.body;
-  client = await pool.acquire()
 
   if (!req.user) {
     return res.status(401).json({ message: "Nieautoryzowany" });
@@ -55,13 +54,10 @@ export const userUpdate = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Błąd serwera" });
-  } finally {
-      client.release(); // ← обов’язково
-    }
+  } 
 };
 
 export const getMe = async (req, res) => {
-  client = await pool.acquire();
 
   try {
     // req.user.id — це id користувача з токена
@@ -77,9 +73,7 @@ export const getMe = async (req, res) => {
   } catch (err) {
     console.error("❌ Помилка при отриманні користувача:", err);
     res.status(500).json({ message: "Помилка сервера", error: err.message });
-  } finally {
-      client.release(); // ← обов’язково
-    }
+  } 
 }
 
 

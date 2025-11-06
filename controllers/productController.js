@@ -71,9 +71,7 @@ export const createProduct = async (req, res) => {
   } catch (err) {
     console.error("❌ Błąd dodawania produktu:", err);
     res.status(500).json({ message: "Błąd serwera" });
-  } finally {
-      client.release(); // ← обов’язково
-    }
+  } 
 };
 
 export const getProducts = async (req, res) => {
@@ -96,9 +94,7 @@ export const getProducts = async (req, res) => {
   } catch (err) {
     console.error("❌ Błąd pobierania produktów:", err);
     res.status(500).json({ message: "Błąd serwera" });
-  } finally {
-      client.release(); // ← обов’язково
-    }
+  } 
 };
 
 export const deleteProduct = async (req, res) => {
@@ -131,9 +127,7 @@ export const deleteProduct = async (req, res) => {
   } catch (err) {
     console.error("❌ Błąd usuwania produktu:", err);
     res.status(500).json({ message: "Błąd serwera" });
-  } finally {
-      client.release(); // ← обов’язково
-    }
+  } 
 };
 
 export const updateProduct = async (req, res) => {
@@ -275,8 +269,6 @@ export const updateProduct = async (req, res) => {
   } catch (err) {
     console.error("❌ Błąd aktualizacji produktu:", err);
     res.status(500).json({ message: "Błąd serwera" });
-  } finally {
-      client.release(); // ← обов’язково
-    }
+  } 
 };
 

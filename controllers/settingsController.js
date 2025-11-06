@@ -69,9 +69,7 @@ export const uploadImage = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Błąd serwera podczas wgrywania obrazu." });
-  }  finally {
-      client.release(); // ← обов’язково
-    }
+  }  
 }; 
 
 export const getImage = async (req, res) => {
@@ -83,8 +81,6 @@ export const getImage = async (req, res) => {
   } catch (err) {
     console.error("Error fetching settings:", err);
     res.status(500).json({ message: "Server error" });
-  } finally {
-      client.release(); // ← обов’язково
-    }
+  } 
 }
 
