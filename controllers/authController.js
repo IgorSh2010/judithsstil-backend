@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { pool } from "../middleware/dbConn.js";
+import { getClientPool } from "../middleware/ClientPool.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -31,6 +31,7 @@ const generateRefreshToken = (user) => {
 // Реєстрація
 export const register = async (req, res) => {
   const { email, password, tenant } = req.body; 
+  const client = await getClientPool();
 
   if (!email || !password) {
       return res.status(400).json({ message: "Nie wypełnione Email lub hasło" });
@@ -38,7 +39,7 @@ export const register = async (req, res) => {
   
   try {
     // Перевірка, чи існує вже юзер
-    const existing = await pool.query("SELECT id FROM users WHERE email = $1 AND tenant = $2", [email, tenant]);
+    const existing = await client.query("SELECT id FROM users WHERE email = $1 AND tenant = $2", [email, tenant]);
     if (existing.rows.length > 0) {
     return res.status(400).json({ message: "Użytkownik z takim email już istnieje!" });
     }
@@ -47,7 +48,7 @@ export const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Додавання користувача
-    const result = await pool.query(
+    const result = await client.query(
     `INSERT INTO users (email, password, tenant) 
         VALUES ($1, $2, $3) RETURNING id, email, created_at`,
     [email, hashedPassword, tenant]
@@ -57,7 +58,7 @@ export const register = async (req, res) => {
     const token = generateToken(newUser);
     const refreshToken = generateRefreshToken(newUser);
 
-    await pool.query(
+    await client.query(
           `INSERT INTO user_refresh_tokens (user_id, token, user_agent, ip_address, expires_at)
           VALUES ($1, $2, $3, $4, NOW() + interval '3 days')`,
           [user.id, refreshToken, userAgent, ip]
@@ -80,20 +81,23 @@ export const register = async (req, res) => {
     } catch (err) {
       console.error("Błąd pod czas rejestracji:", err);
       res.status(500).json({ message: "Wewnętrny błąd serwera" });
-    } 
+    } finally {
+      client.release(); // <-- обов’язково!
+    }
   };
 
 // Autoryzacja (logowanie)
 export const login = async (req, res) => {
   const { email, password, tenant } = req.body;
-  
+  const client = await getClientPool();
+
     if (!email || !password) {
         return res.status(400).json({ message: "Nie wypełnione Email lub hasło" });
         }
 
     try {
       // Знаходження юзера
-      const userResult = await pool.query("SELECT id, email, tenant, password FROM users WHERE email = $1 AND tenant = $2", [email, tenant]);
+      const userResult = await client.query("SELECT id, email, tenant, password FROM users WHERE email = $1 AND tenant = $2", [email, tenant]);
       if (userResult.rows.length === 0) {
         return res.status(400).json({ message: "Email lub hasło nie prawidłowe lub użytkownik nie zarejestrowany!" });
       }
@@ -114,14 +118,14 @@ export const login = async (req, res) => {
         const userAgent = req.headers["user-agent"];
 
         // Оновити last_login і додати запис в user_logins
-        await pool.query("UPDATE users SET last_login = NOW() WHERE id = $1", [user.id]);
-        await pool.query(
+        await client.query("UPDATE users SET last_login = NOW() WHERE id = $1", [user.id]);
+        await client.query(
           `INSERT INTO user_logins (user_id, ip_address, user_agent)
            VALUES ($1, $2, $3)`,
           [user.id, ip, userAgent]
         );
 
-        await pool.query(
+        await client.query(
           `INSERT INTO user_refresh_tokens (user_id, token, user_agent, ip_address, expires_at)
           VALUES ($1, $2, $3, $4, NOW() + interval '3 days')`,
           [user.id, refreshToken, userAgent, ip]
@@ -144,16 +148,19 @@ export const login = async (req, res) => {
     } catch (err) {
       console.error("Błąd pod czas logowania:", err);
       res.status(500).json({ message: "Wewnętrny błąd serwera - login" });
-    } 
-    };
+    } finally {
+      client.release();
+    }
+ };
 
 // 👤 Перевірка авторизації (опціонально)
 export const getProfile = async (req, res) => {
+   const client = await getClientPool();
     try {
       // user додається через middleware після перевірки токена
       const userId = req.user.id;
   
-      const result = await pool.query("SELECT id, email, created_at FROM users WHERE id = $1", [userId]);
+      const result = await client.query("SELECT id, email, created_at FROM users WHERE id = $1", [userId]);
       if (result.rows.length === 0) {
         return res.status(404).json({ message: "Користувача не знайдено" });
       }
@@ -162,11 +169,14 @@ export const getProfile = async (req, res) => {
     } catch (err) {
       console.error("❌ Помилка при отриманні профілю:", err);
       res.status(500).json({ message: "Внутрішня помилка сервера" });
-    } 
+    } finally {
+      client.release(); // <-- обов’язково!
+    }
 };
 
   // === REFRESH ===
 export const refreshToken = async (req, res) => {
+  const client = await getClientPool();
   try {
     const token = req.cookies?.refreshToken;
 
@@ -178,7 +188,7 @@ export const refreshToken = async (req, res) => {
     const decoded = jwt.verify(token, process.env.REFRESH_JWT_SECRET);
 
     // Перевірка чи токен існує у БД (тобто не відкликаний)
-    const result = await pool.query(
+    const result = await client.query(
       `SELECT urt.token, u.id, u.email, u.tenant, u.username, u.role
        FROM user_refresh_tokens urt
        JOIN users u ON urt.user_id = u.id
@@ -199,24 +209,28 @@ export const refreshToken = async (req, res) => {
   } catch (err) {
     console.error("❌ Błąd podczas odświeżania tokena:", err);
     res.status(401).json({ message: "Nieprawidłowy refresh token" });
-  } 
+  } finally {
+    client.release(); // <-- обов’язково!
+  }
 };
 
 // === LOGOUT ===
 export const logout = async (req, res) => {
   const refreshToken = req.cookies?.refreshToken;
+  const client = await getClientPool();
+
   if (!refreshToken) {
     return res.status(400).json({ message: "Brak tokena odświeżającego" });
   }
   try {
     // Видалення refresh токена з бази
-    await pool.query("DELETE FROM user_refresh_tokens WHERE token = $1", [refreshToken]);
+    await client.query("DELETE FROM user_refresh_tokens WHERE token = $1", [refreshToken]);
     res.clearCookie("refreshToken");
     res.json({ message: "Wylogowano pomyślnie" });
   } catch (err) {
     console.error("Błąd pod czas wylogowania:", err);
     res.status(500).json({ message: "Wewnętrzny błąd serwera - logout" });
-  } 
+  } finally {
+    client.release();
+  }
 };
-
-

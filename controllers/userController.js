@@ -1,11 +1,12 @@
 import dotenv from "dotenv";
 import bcrypt  from "bcrypt";
-import { pool } from "../middleware/dbConn.js";
+import { getClientPool } from "../middleware/ClientPool.js";
 
 dotenv.config();
 
 export const userUpdate = async (req, res) => {
   const { username, email, phone, adress, password } = req.body;
+  const client = await getClientPool();
 
   if (!req.user) {
     return res.status(401).json({ message: "Nieautoryzowany" });
@@ -41,7 +42,7 @@ export const userUpdate = async (req, res) => {
 
     values.push(req.user.id);
     const query = `UPDATE users SET ${updates.join(", ")} WHERE id = $${idx} RETURNING id, username, email`;
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     if (result.rowCount === 0) {
       return res.status(404).json({ message: "Użytkownik nie znaleziony" });
@@ -54,14 +55,16 @@ export const userUpdate = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Błąd serwera" });
-  } 
+  } finally {
+    client.release();
+  }
 };
 
 export const getMe = async (req, res) => {
-
+  const client = await getClientPool();
   try {
     // req.user.id — це id користувача з токена
-    const result = await pool.query(
+    const result = await client.query(
       "SELECT id, email, username, tenant, phone, adress, role FROM users WHERE id = $1",
       [req.user.id]
     );
@@ -73,7 +76,9 @@ export const getMe = async (req, res) => {
   } catch (err) {
     console.error("❌ Помилка при отриманні користувача:", err);
     res.status(500).json({ message: "Помилка сервера", error: err.message });
-  } 
-}
+  } finally {
+    client.release();
+  }
+};
 
 
