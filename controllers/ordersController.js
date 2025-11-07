@@ -50,5 +50,7 @@ export const getClientOrder = async (req, res) => {
     } catch (error) {
         console.error("Błąd podczas pobierania zamówień:", error);
         res.status(500).json({ message: "Błąd serwera podczas pobierania zamówień." });
-    } 
+    } finally {
+        client.release(); // <-- обов’язково!
+    }
 }
