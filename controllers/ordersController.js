@@ -54,3 +54,16 @@ export const getClientOrder = async (req, res) => {
         client.release(); // <-- обов’язково!
     }
 }
+
+export const getClientCart = async (req, res) => {
+    const client = req.dbClient;
+    try {
+        const result = await client.query(`SELECT * FROM carts WHERE user_id = $1`, [req.user.id]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Błąd podczas pobierania koszyka:", error);
+        res.status(500).json({ message: "Błąd serwera podczas pobierania koszyka." });
+    } finally {
+        client.release(); // <-- обов’язково!
+    }
+}
