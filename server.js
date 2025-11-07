@@ -59,7 +59,7 @@ app.get("/", (req, res) => {
 //app.listen(5000, () => console.log("🚀 Server running on port 5000"))
 
 // 🔹 Запуск сервера
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4042;
 app.listen(PORT, () => {
   console.log(`🚀 Backend API слухає на порту ${PORT}`);
 });
