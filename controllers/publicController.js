@@ -45,6 +45,7 @@ export const getBanner = async (req, res) => {
 };
 
 export const getCategories = async (req, res) => {
+  console.log("Fetching categories: first reqest -- ", req);
   try {
     const query = ` 
         SELECT id, name, slug
