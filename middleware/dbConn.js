@@ -15,7 +15,7 @@ export const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
-  max: 20,                  // максимум одночасних з’єднань
+  max: 150,                  // максимум одночасних з’єднань
   idleTimeoutMillis: 20000, // через 20 секунд неактивності з’єднання закривається
 });
 
