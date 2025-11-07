@@ -1,9 +1,10 @@
 import dotenv from "dotenv";
-import { pool } from "../middleware/dbConn.js";
+import { getClientPool } from "../middleware/ClientPool.js";
 
 dotenv.config();
 
 export const getLogo = async (req, res) => {
+  const client = await getClientPool();
   //В цій змінній зберігається домен орігін запиту по якому можна визначити тенанта
   //для майбутніх змін коли лого буде зберігатися в різних схемах
   //const host = req.get('origin');
@@ -15,7 +16,7 @@ export const getLogo = async (req, res) => {
       FROM judithsstil.settings
       WHERE logo_url IS NOT NULL;
     `;
-    const result = await pool.query(query);
+    const result = await client.query(query);
     if (result.rows.length === 0 || !result.rows[0].logourl) {
       return res.status(404).json({ message: "Brak ścieżki do logo" });
     }
@@ -23,17 +24,20 @@ export const getLogo = async (req, res) => {
   } catch (err) {
     console.error("Błąd podczas pobierania logo:", err);
     res.status(500).json({ message: "Błąd serwera podczas pobierania logo." });
-  } 
+  } finally {
+    client.release(); // <-- обов’язково!
+  }
 };
 
 export const getBanner = async (req, res) => {
+  const client = await getClientPool();
   try {
     const query = ` 
         SELECT banner_url AS bannerUrl
         FROM judithsstil.settings
         WHERE banner_url IS NOT NULL;
       `;
-    const result = await pool.query(query);
+    const result = await client.query(query);
     if (result.rows.length === 0 || !result.rows[0].bannerurl) {
       return res.status(404).json({ message: "Brak ścieżki do banera" });
     }   
@@ -41,17 +45,19 @@ export const getBanner = async (req, res) => {
     } catch (err) {
         console.error("Błąd podczas pobierania banera:", err);
         res.status(500).json({ message: "Błąd serwera podczas pobierania banera." });
-    } 
+    } finally {
+        client.release(); // <-- обов’язково!
+    }
 };
 
 export const getCategories = async (req, res) => {
-  console.log("Fetching categories: first reqest -- ", req.body);
+  const client = await getClientPool();
   try {
     const query = ` 
         SELECT id, name, slug
         FROM judithsstil.product_categories;
       `;
-    const result = await pool.query(query);
+    const result = await client.query(query);
     if (result.rows.length === 0 || !result.rows[0].name) {
       return res.status(404).json({ message: "Brak kategorji" });
     }   
@@ -59,10 +65,13 @@ export const getCategories = async (req, res) => {
     } catch (err) {
         console.error("Błąd podczas pobierania kategorji:", err);
         res.status(500).json({ message: "Błąd serwera podczas pobierania kategorji." });
-    } 
+    } finally {
+        client.release(); // <-- обов’язково!
+    }
 };
 
 export const getProducts = async (req, res) => {
+  const client = await getClientPool();
   try {
     const { id } = req.params;
     const { category } = req.query; // ✅ додаємо query параметр
@@ -94,7 +103,7 @@ export const getProducts = async (req, res) => {
         GROUP BY p.id, pc.name, pc.slug
         ORDER BY p.created_at DESC;
       `;
-      const result = await pool.query(query, [id]);
+      const result = await client.query(query, [id]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ message: "Produkt nie znaleziony" });
@@ -164,7 +173,7 @@ export const getProducts = async (req, res) => {
       `;
     }
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
     products = result.rows.map((p) => ({
       ...p,
       images: typeof p.images === "string" ? JSON.parse(p.images) : p.images,
@@ -174,12 +183,15 @@ export const getProducts = async (req, res) => {
   } catch (err) {
     console.error("❌ Błąd pobierania produktów:", err);
     res.status(500).json({ message: "Błąd serwera" });
+  } finally {
+    client.release(); // <-- обов’язково!
   }
 };
 
 export const getTest = async (req, res) => {
+  const client = await getClientPool();
   try {
-    const result = await pool.query("SELECT NOW() AS current_time;")
+    const result = await client.query("SELECT NOW() AS current_time;")
     res.json({
       message: "✅ Connected to PostgreSQL!",
       time: result.rows[0].current_time,
@@ -187,6 +199,8 @@ export const getTest = async (req, res) => {
   } catch (err) {
     console.error("❌ Database connection error:", err)
     res.status(500).json({ error: "Database connection failed", details: err.message })
+  } finally {
+    client.release(); // <-- обов’язково!
   }
 };
 
