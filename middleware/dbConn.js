@@ -24,7 +24,7 @@ export const pool = new Pool({
 // }
 
 pool.on("connect", () => {
-  console.log("✅ Підключено до бази даних PostgreSQL з кількістю одночасних з'єднань:", pool.max);
+  console.log("✅ Підключено до бази даних PostgreSQL");
 });
 
 pool.on("error", (err) => {
