@@ -190,17 +190,15 @@ export const removeCartItem = async (req, res) => {
 
     // Перераховуємо суму кошика
     const updateAmount = `
-      UPDATE carts
-      SET amount = COALESCE((
-        SELECT SUM(quantity * price) 
-        FROM cart_items 
-        WHERE (SELECT id FROM carts
-                WHERE user_id = $1 
-                AND is_finished = false)
-      ), 0)
-      WHERE user_id = $1`;
-      
-    const updated = await client.query(updateAmount, [user_id]);
+      UPDATE carts c
+        SET amount = COALESCE(SUM(ci.quantity * ci.price), 0)
+        FROM cart_items ci
+        WHERE ci.cart_id = c.id
+        AND c.user_id = $1
+        AND c.is_finished = false
+        GROUP BY c.id`;
+
+    await client.query(updateAmount, [user_id]);
     await client.query("COMMIT");
 
     res.json({ message: "Produkt usunięty z koszyka." });
