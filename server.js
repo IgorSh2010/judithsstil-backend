@@ -44,8 +44,6 @@ app.get("/", (req, res) => {
   res.send("Backend API працює ✅🚀");
 });
 
-
-
 //app.listen(5000, () => console.log("🚀 Server running on port 5000"))
 
 // 🔹 Запуск сервера
