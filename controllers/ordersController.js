@@ -115,7 +115,7 @@ export const addToCart = async (req, res) => {
       VALUES ($1, $2, $3, $4)
       ON CONFLICT (cart_id, product_id)
       DO UPDATE SET 
-        quantity = EXCLUDED.quantity,
+        quantity = cart_items.quantity + EXCLUDED.quantity,
         price = EXCLUDED.price
     `;
     await client.query(insertItem, [cartID, productID, quantity, price]);
