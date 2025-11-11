@@ -66,7 +66,7 @@ export const getClientCart = async (req, res) => {
                                            left join carts c on c.id = ci.cart_id
                                            WHERE c.user_id = $1 AND c.is_finished = false
                                            GROUP BY ci.id, ci.product_id, ci.quantity, ci.price, p.title`, [req.user.id]);
-        res.json(result.rows);
+        res.json({items: result.rows});
     } catch (error) {
         console.error("Błąd podczas pobierania koszyka:", error);
         res.status(500).json({ message: "Błąd serwera podczas pobierania koszyka." });
