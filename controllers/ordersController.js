@@ -58,7 +58,7 @@ export const getClientOrder = async (req, res) => {
 export const getClientCart = async (req, res) => {
     const client = req.dbClient;
     try {
-        const result = await client.query(`SELECT * FROM carts WHERE user_id = $1`, [req.user.id]);
+        const result = await client.query(`SELECT * FROM carts WHERE user_id = $1 AND is_finished = false`, [req.user.id]);
         res.json(result.rows);
     } catch (error) {
         console.error("Błąd podczas pobierania koszyka:", error);
@@ -79,7 +79,7 @@ export const addToCart = async (req, res) => {
 
   try {
     await client.query("BEGIN");
-
+    console.log("BEGIN transaction");
     // 1️⃣ Створюємо (або отримуємо) кошик користувача
     const insertCart = `
       INSERT INTO carts (user_id, amount)
