@@ -69,14 +69,71 @@ export const getClientCart = async (req, res) => {
 }
 
 export const addToCart = async (req, res) => {
-    const client = req.dbClient;
-    try {
-        const result = await client.query(`INSERT INTO carts (user_id, product_id, quantity) VALUES ($1, $2, $3)`, [req.user.id, req.body.productID, req.body.quantity]);
-        res.json(result.rows);
-    } catch (error) {
-        console.error("Błąd podczas dodawania:", error);
-        res.status(500).json({ message: "Błąd serwera podczas dodawania koszyka." });
-    } finally {
-        client.release(); // <-- обов’язково!
+  const client = req.dbClient;
+  const user_id = req.user?.id;
+  const { productID, quantity, price } = req.body;
+
+  if (!user_id || !productID || !quantity || !price) {
+    return res.status(400).json({ message: "Brak wymaganych danych." });
+  }
+
+  try {
+    await client.query("BEGIN");
+
+    // 1️⃣ Створюємо (або отримуємо) кошик користувача
+    const insertCart = `
+      INSERT INTO carts (user_id, amount)
+      VALUES ($1, 0)
+      ON CONFLICT (user_id)
+      DO NOTHING
+      RETURNING id
+    `;
+    let result = await client.query(insertCart, [user_id]);
+
+    let cartID;
+    if (result.rows.length > 0) {
+      cartID = result.rows[0].id;
+    } else {
+      // Якщо кошик уже існує
+      const existing = await client.query(`SELECT id FROM carts WHERE user_id = $1`, [user_id]);
+      cartID = existing.rows[0].id;
     }
-}
+
+    // 2️⃣ Додаємо або оновлюємо товар у cart_items
+    const insertItem = `
+      INSERT INTO cart_items (cart_id, product_id, quantity, price)
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT (cart_id, product_id)
+      DO UPDATE SET 
+        quantity = EXCLUDED.quantity,
+        price = EXCLUDED.price
+    `;
+    await client.query(insertItem, [cartID, productID, quantity, price]);
+
+    // 3️⃣ Перераховуємо суму кошика
+    const updateAmount = `
+      UPDATE carts
+      SET amount = COALESCE((
+        SELECT SUM(quantity * price) 
+        FROM cart_items 
+        WHERE cart_id = $1
+      ), 0)
+      WHERE id = $1
+      RETURNING amount
+    `;
+    const updated = await client.query(updateAmount, [cartID]);
+
+    await client.query("COMMIT");
+
+    res.json({
+      message: "Produkt dodany do koszyka.",
+      totalAmount: updated.rows[0].amount,
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Błąd podczas dodawania do koszyka:", error);
+    res.status(500).json({ message: "Błąd serwera podczas dodawania koszyka." });
+  } finally {
+    client.release();
+  }
+};
