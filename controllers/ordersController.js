@@ -191,12 +191,12 @@ export const removeCartItem = async (req, res) => {
     // Перераховуємо суму кошика
     const updateAmount = `
       UPDATE carts c
-        SET amount = COALESCE(SUM(ci.quantity * ci.price), 0)
+      SET amount = COALESCE((
+        SELECT SUM(ci.quantity * ci.price)
         FROM cart_items ci
         WHERE ci.cart_id = c.id
-        AND c.user_id = $1
-        AND c.is_finished = false
-        GROUP BY c.id;`;
+      ), 0)
+      WHERE c.user_id = $1 AND c.is_finished = false;`;
 
     await client.query(updateAmount, [user_id]);
     await client.query("COMMIT");
