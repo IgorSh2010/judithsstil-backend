@@ -58,14 +58,14 @@ export const getClientOrder = async (req, res) => {
 export const getClientCart = async (req, res) => {
     const client = req.dbClient;
     try {
-        const result = await client.query(`SELECT ci.id, ci.product_id, ci.quantity, ci.price, p.title, 
+        const result = await client.query(`SELECT ci.id, ci.product_id, ci.quantity, ci.price, p.title, c.amount
                                            COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
                                            FROM cart_items ci
                                            JOIN products p ON p.id = ci.product_id
                                            LEFT JOIN product_images pi ON pi.product_id = ci.product_id
                                            left join carts c on c.id = ci.cart_id
                                            WHERE c.user_id = $1 AND c.is_finished = false
-                                           GROUP BY ci.id, ci.product_id, ci.quantity, ci.price, p.title`, [req.user.id]);
+                                           GROUP BY ci.id, ci.product_id, ci.quantity, ci.price, p.title, c.amount`, [req.user.id]);
         res.json({items: result.rows});
     } catch (error) {
         console.error("Błąd podczas pobierania koszyka:", error);
@@ -155,7 +155,7 @@ export const clearCart = async (req, res) => {
                                          WHERE user_id = $1 
                                          AND is_finished = false)`
                         , [user_id]);
-                        
+
     await client.query("COMMIT");
     res.json({ message: "Koszyk został wyczyszczony." });
   } catch (error) {
