@@ -2,7 +2,7 @@ export const requireRole = async () => {
   return async (req, res, next) => {
     const userID = req.user.id;
     const result = await client.query(
-      "SELECT role FROM users WHERE id = $1",
+      "SELECT role FROM public.users WHERE id = $1",
       [userID]
     );
 
