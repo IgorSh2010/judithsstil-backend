@@ -68,9 +68,9 @@ export const getClientCart = async (req, res) => {
                                            GROUP BY ci.id, ci.product_id, ci.quantity, ci.price, p.title`, [req.user.id]);
         
         const total = await client.query(`SELECT amount FROM carts 
-                                          WHERE user_id = $1 AND is_finished = false`, [req.user.id]).rows[0].amount;                                   
+                                          WHERE user_id = $1 AND is_finished = false`, [req.user.id]);                                   
         
-        res.json({ amount: total, items: result.rows});
+        res.json({ amount: total.rows[0].amount, items: result.rows});
     } catch (error) {
         console.error("Błąd podczas pobierania koszyka:", error);
         res.status(500).json({ message: "Błąd serwera podczas pobierania koszyka." });
