@@ -58,15 +58,19 @@ export const getClientOrder = async (req, res) => {
 export const getClientCart = async (req, res) => {
     const client = req.dbClient;
     try {
-        const result = await client.query(`SELECT ci.id, ci.product_id, ci.quantity, ci.price, p.title, c.amount,
+        const result = await client.query(`SELECT ci.id, ci.product_id, ci.quantity, ci.price, p.title,
                                            COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
                                            FROM cart_items ci
                                            JOIN products p ON p.id = ci.product_id
                                            LEFT JOIN product_images pi ON pi.product_id = ci.product_id
                                            left join carts c on c.id = ci.cart_id
                                            WHERE c.user_id = $1 AND c.is_finished = false
-                                           GROUP BY ci.id, ci.product_id, ci.quantity, ci.price, p.title, c.amount`, [req.user.id]);
-        res.json({items: result.rows});
+                                           GROUP BY ci.id, ci.product_id, ci.quantity, ci.price, p.title`, [req.user.id]);
+        
+        const total = await client.query(`SELECT amount FROM carts 
+                                          WHERE user_id = $1 AND is_finished = false`, [req.user.id]).rows[0].amount;                                   
+        
+        res.json({ amount: total, items: result.rows});
     } catch (error) {
         console.error("Błąd podczas pobierania koszyka:", error);
         res.status(500).json({ message: "Błąd serwera podczas pobierania koszyka." });
@@ -162,6 +166,33 @@ export const clearCart = async (req, res) => {
     await client.query("ROLLBACK");
     console.error("Błąd podczas czyszczenia koszyka:", error);
     res.status(500).json({ message: "Błąd serwera podczas czyszczenia koszyka." });
+  } finally {
+    client.release();
+  }
+};
+
+export const removeCartItem = async (req, res) => {
+  const client = req.dbClient;
+  const user_id = req.user?.id;
+  const productID = req.params.productID;
+
+  if (!user_id || !productID) {
+    return res.status(400).json({ message: "Brak wymaganych danych." });
+  }
+
+  try {
+    await client.query("BEGIN");
+    await client.query(`DELETE FROM cart_items 
+                        WHERE cart_id = (SELECT id FROM carts
+                                         WHERE user_id = $1 
+                                         AND is_finished = false)
+                        AND product_id = $2`, [user_id, productID]);
+    await client.query("COMMIT");
+    res.json({ message: "Produkt usunięty z koszyka." });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Błąd podczas usuwania produktu z koszyka:", error);
+    res.status(500).json({ message: "Błąd serwera podczas usuwania produktu z koszyka." });
   } finally {
     client.release();
   }

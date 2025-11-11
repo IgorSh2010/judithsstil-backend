@@ -4,7 +4,7 @@ import { userUpdate, getMe } from "../controllers/userController.js";
 import { uploadImage, getImage } from "../controllers/settingsController.js";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { tenantResolver } from "../middleware/tenantResolver.js";
-import { getClientOrder, getClientCart, addToCart, clearCart } from "../controllers/ordersController.js";
+import { getClientOrder, getClientCart, addToCart, clearCart, removeCartItem } from "../controllers/ordersController.js";
 
 const router = express.Router();
 const upload = multer({ dest: "tmp/" }); // тимчасова папка
@@ -18,6 +18,7 @@ router.post("/upload-image", tenantResolver, authenticateToken, upload.single("i
 router.post("/cart", tenantResolver, authenticateToken, addToCart);
 
 router.delete("/clearCart", tenantResolver, authenticateToken, clearCart);
+router.delete("/remove-from-cart/:productID", tenantResolver, authenticateToken, removeCartItem);
 
 
 // 🧑‍💻 Отримати поточного користувача
