@@ -1,13 +1,14 @@
-export const requireRole = (role) => {
-  return (req, res, next) => {
-    const user = req.user;
-    if (!user) return res.status(401).json({ message: "No user" });
-    // приклад: user може містити claim x-hasura-default-role або role
-    if (user["https://hasura.io/jwt/claims"]?.["x-hasura-default-role"] === role
-        || user.role === role
-        || user.default_role === role) {
-      return next();
+export const requireRole = async () => {
+  return async (req, res, next) => {
+    const userID = req.user.id;
+    const result = await client.query(
+      "SELECT role FROM users WHERE id = $1",
+      [userID]
+    );
+
+    if (result.rows[0].role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" }); // 403 Forbidden
     }
-    return res.status(403).json({ message: "Недостатньо прав" });
+    next();
   };
 };

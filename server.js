@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import products from "./routes/products.js";
 import publicRoutes from "./routes/public.js";
+import adminRoutes from "./routes/admin.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -32,6 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/products", products);
 app.use("/api/public", publicRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/api/verify-token", authenticateToken, (req, res) => {
   res.json({ valid: true, user: req.user });
