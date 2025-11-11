@@ -1,4 +1,4 @@
-export const getAllOrders = async (req, res) => {
+export const getOrders = async (req, res) => {
     const { id } = req.params.id;
     const client = req.dbClient;
     const result = "";
