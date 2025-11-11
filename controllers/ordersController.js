@@ -63,7 +63,8 @@ export const getClientCart = async (req, res) => {
                                            FROM cart_items ci
                                            JOIN products p ON p.id = ci.product_id
                                            LEFT JOIN product_images pi ON pi.product_id = ci.product_id
-                                           WHERE user_id = $1 AND is_finished = false`, [req.user.id]);
+                                           left join carts c on c.id = ci.cart_id
+                                           WHERE c.user_id = $1 AND c.is_finished = false`, [req.user.id]);
         res.json(result.rows);
     } catch (error) {
         console.error("Błąd podczas pobierania koszyka:", error);
