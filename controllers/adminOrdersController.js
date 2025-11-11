@@ -1,7 +1,7 @@
 export const getOrders = async (req, res) => {
     const { id } = req.params;
     const client = req.dbClient;
-    const result = "";
+    const result = {};
 
     try {
         if (id !== "main") {
@@ -9,7 +9,6 @@ export const getOrders = async (req, res) => {
             "SELECT id, user_id, total_price, status_id, payment_id, description FROM orders WHERE id = $1", [id]
         );
         } else {
-            console.log("id", id);
             result = await client.query(
             "SELECT id, user_id, total_price, status_id, payment_id, description FROM orders"
         );
