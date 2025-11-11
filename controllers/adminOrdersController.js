@@ -1,11 +1,19 @@
 export const getAllOrders = async (req, res) => {
-    //const { id } = req.params;
+    const { id } = req.params.id;
     const client = req.dbClient;
+    const result = "";
 
     try {
-        const result = await client.query(
+        if (id !== "main") {
+            result = await client.query(
+            "SELECT * FROM orders WHERE id = $1", [id]
+        );
+        } else {
+            result = await client.query(
             "SELECT * FROM orders"
         );
+        }
+
         res.json(result.rows);
     } catch (err) {
         console.error("❌ Помилка при отриманні замовлень:", err);
