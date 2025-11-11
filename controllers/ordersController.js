@@ -101,7 +101,7 @@ export const addToCart = async (req, res) => {
       cartID = result.rows[0].id;
     } else {
       // Якщо кошик уже існує
-      const existing = await client.query(`SELECT id FROM carts WHERE user_id = $1`, [user_id]);
+      const existing = await client.query(`SELECT id FROM carts WHERE user_id = $1 AND is_finished = false`, [user_id]);
       cartID = existing.rows[0].id;
     }
 
@@ -124,7 +124,7 @@ export const addToCart = async (req, res) => {
         FROM cart_items 
         WHERE cart_id = $1
       ), 0)
-      WHERE id = $1
+      WHERE id = $1 
       RETURNING amount
     `;
     const updated = await client.query(updateAmount, [cartID]);
@@ -139,6 +139,22 @@ export const addToCart = async (req, res) => {
     await client.query("ROLLBACK");
     console.error("Błąd podczas dodawania do koszyka:", error);
     res.status(500).json({ message: "Błąd serwera podczas dodawania koszyka." });
+  } finally {
+    client.release();
+  }
+};
+
+export const clearCart = async (req, res) => {
+  const client = req.dbClient;
+  try {
+    await client.query("BEGIN");
+    await client.query(`DELETE FROM cart_items WHERE cart_id = (SELECT id FROM carts WHERE user_id = $1 AND is_finished = false)`);
+    await client.query("COMMIT");
+    res.json({ message: "Koszyk został wyczyszczony." });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Błąd podczas czyszczenia koszyka:", error);
+    res.status(500).json({ message: "Błąd serwera podczas czyszczenia koszyka." });
   } finally {
     client.release();
   }
