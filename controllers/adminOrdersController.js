@@ -4,14 +4,14 @@ export const getOrders = async (req, res) => {
     const result = "";
 
     try {
-        console.log("id", id);
         if (id !== "main") {
             result = await client.query(
-            "SELECT * FROM orders WHERE id = $1", [id]
+            "SELECT id, user_id, total_price, status_id, payment_id, description FROM orders WHERE id = $1", [id]
         );
         } else {
+            console.log("id", id);
             result = await client.query(
-            "SELECT * FROM orders"
+            "SELECT id, user_id, total_price, status_id, payment_id, description FROM orders"
         );
         }
 
