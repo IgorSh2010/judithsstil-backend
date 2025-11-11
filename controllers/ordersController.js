@@ -67,3 +67,16 @@ export const getClientCart = async (req, res) => {
         client.release(); // <-- обов’язково!
     }
 }
+
+export const addToCart = async (req, res) => {
+    const client = req.dbClient;
+    try {
+        const result = await client.query(`INSERT INTO carts (user_id, product_id, quantity) VALUES ($1, $2, $3)`, [req.user.id, req.body.productID, req.body.quantity]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Błąd podczas dodawania:", error);
+        res.status(500).json({ message: "Błąd serwera podczas dodawania koszyka." });
+    } finally {
+        client.release(); // <-- обов’язково!
+    }
+}

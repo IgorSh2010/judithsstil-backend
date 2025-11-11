@@ -15,12 +15,7 @@ export const authenticateToken = (req, res, next) => {
     if (authHeader && authHeader.startsWith("Bearer ")) {
       token = authHeader.split(" ")[1];
     }
-
-    // 2) якщо немає в заголовку — спробуємо з cookie (якщо використовуєш cookie)
-    /* if (!token && req.cookies && req.cookies.token) {
-      token = req.cookies.token;
-    } */
-
+    
     if (!token) return res.status(401).json({ message: "Токен відсутній" });
 
     // 3) верифікуємо
