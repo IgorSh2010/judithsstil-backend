@@ -58,7 +58,7 @@ export const getClientOrder = async (req, res) => {
 export const getClientCart = async (req, res) => {
     const client = req.dbClient;
     try {
-        const result = await client.query(`SELECT ci.id, ci.product_id, ci.quantity, ci.price, p.title, c.amount
+        const result = await client.query(`SELECT ci.id, ci.product_id, ci.quantity, ci.price, p.title, c.amount,
                                            COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
                                            FROM cart_items ci
                                            JOIN products p ON p.id = ci.product_id
