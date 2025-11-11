@@ -4,6 +4,7 @@ export const getAllOrders = async (req, res) => {
     const result = "";
 
     try {
+        console.log("id", id);
         if (id !== "main") {
             result = await client.query(
             "SELECT * FROM orders WHERE id = $1", [id]
