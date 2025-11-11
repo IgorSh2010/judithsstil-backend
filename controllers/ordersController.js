@@ -146,6 +146,8 @@ export const addToCart = async (req, res) => {
 
 export const clearCart = async (req, res) => {
   const client = req.dbClient;
+  const user_id = req.user?.id;
+  
   try {
     await client.query("BEGIN");
     await client.query(`DELETE FROM cart_items WHERE cart_id = (SELECT id FROM carts WHERE user_id = $1 AND is_finished = false)`);
