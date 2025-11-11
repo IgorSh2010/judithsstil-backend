@@ -6,7 +6,7 @@ import { requireRole } from "../middleware/requireRole.js";
 
 const router = express.Router();
 
-router.get("/order/:id", tenantResolver, authenticateToken, getOrders); 
+router.get("/order/:id", tenantResolver, authenticateToken, requireRole("admin"), getOrders); 
 //router.patch("/:id", verifyToken, verifyAdmin, updateOrderStatus); requireRole
 
 export default router;

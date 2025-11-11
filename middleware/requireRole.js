@@ -1,4 +1,4 @@
-export const requireRole = async () => {
+export const requireRole = async (role) => {
   return async (req, res, next) => {
     const userID = req.user.id;
     const result = await client.query(
@@ -6,7 +6,7 @@ export const requireRole = async () => {
       [userID]
     );
 
-    if (result.rows[0].role !== "admin") {
+    if (result.rows[0].role !== role) {
       return res.status(403).json({ message: "Forbidden" }); // 403 Forbidden
     }
     next();

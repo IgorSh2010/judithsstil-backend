@@ -1,5 +1,5 @@
 export const getOrders = async (req, res) => {
-    const { id } = req.params.id;
+    const { id } = req.params;
     const client = req.dbClient;
     const result = "";
 
