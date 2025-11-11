@@ -196,7 +196,7 @@ export const removeCartItem = async (req, res) => {
         WHERE ci.cart_id = c.id
         AND c.user_id = $1
         AND c.is_finished = false
-        GROUP BY c.id`;
+        GROUP BY c.id;`;
 
     await client.query(updateAmount, [user_id]);
     await client.query("COMMIT");
