@@ -205,6 +205,7 @@ export const updateProduct = async (req, res) => {
         RETURNING *;
       `;
       values.push(productId);
+      console.log(query);
       result = await client.query(query, values);
     }
 
