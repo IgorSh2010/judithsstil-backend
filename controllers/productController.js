@@ -188,6 +188,7 @@ export const updateProduct = async (req, res) => {
 
     for (const [key, value] of Object.entries(fields)) {
       if (key === "images" || key === "removedImages") continue; // ці поля обробляються окремо
+      if (key === "name" ) key = "title";
       setClauses.push(`${key} = $${index}`);
       values.push(value);
       index++;
