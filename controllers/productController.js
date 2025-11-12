@@ -186,9 +186,8 @@ export const updateProduct = async (req, res) => {
     const values = [];
     let index = 1;
 
-    for (let [key, value] of Object.entries(fields)) {
+    for (const [key, value] of Object.entries(fields)) {
       if (key === "images" || key === "removedImages") continue; // ці поля обробляються окремо
-      if (key === "name" ) key = "title";
       setClauses.push(`${key} = $${index}`);
       values.push(value);
       index++;
@@ -205,7 +204,6 @@ export const updateProduct = async (req, res) => {
         RETURNING *;
       `;
       values.push(productId);
-      console.log(query);
       result = await client.query(query, values);
     }
 
