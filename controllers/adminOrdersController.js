@@ -5,8 +5,13 @@ export const getOrders = async (req, res) => {
     try {
         const query =
         id !== "main"
-            ? { text: "SELECT id, user_id, total_price, status_id, payment_id, description FROM orders WHERE id = $1", values: [id] }
-            : { text: "SELECT id, user_id, total_price, status_id, payment_id, description FROM orders" };
+            ? { text: `SELECT id, u.usermame, u.email, u.phone, u.adress, total_price, status_id, payment_id, description 
+                        FROM orders
+                        LEFT JOIN public.users u ON orders.user_id = u.id 
+                        WHERE id = $1`, values: [id] }
+            : { text: `SELECT id, u.usermame, u.email, u.phone, u.adress, total_price, status_id, payment_id, description 
+                        FROM orders
+                        LEFT JOIN public.users u ON orders.user_id = u.id` };
 
         const result = await client.query(query);
         res.json(result.rows);
