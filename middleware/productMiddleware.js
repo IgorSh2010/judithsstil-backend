@@ -1,5 +1,5 @@
 //Додаткова функція для створення/вибору категорій
-const getCategory = async (client, category) => {
+export const getCategory = async (client, category) => {
   const categoryName = category.trim();
   const catCheck = await client.query(
     `SELECT id FROM product_categories WHERE LOWER(name) = LOWER($1)`,
