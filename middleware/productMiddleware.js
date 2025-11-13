@@ -21,6 +21,7 @@ export const getCategory = async (client, category) => {
 
 // 🔸 Обробка sizes (Postgres array)
 export const setSizes = (sizes) => {
+  console.log("sizes", sizes, typeof sizes);
   if (Array.isArray(sizes)) {
     return `{${sizes.map(s => `"${s}"`).join(",")}}`;
   } else {
