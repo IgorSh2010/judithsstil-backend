@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import dotenv from "dotenv";
-import { getCategory } from "../middleware/productMiddleware.js";
+import { getCategory, setSizes } from "../middleware/productMiddleware.js";
 
 dotenv.config();
 
