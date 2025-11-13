@@ -189,7 +189,11 @@ export const updateProduct = async (req, res) => {
     for (let [key, value] of Object.entries(fields)) {
       if (key === "images" || key === "removedImages") continue; // ці поля обробляються окремо
       if (key === "name") key = "title";
-      setClauses.push(`${key} = $${index}`);
+      if (key === "sizes") 
+        setClauses.push(`${key} = $${index}::text[]`)
+      else
+        setClauses.push(`${key} = $${index}`);
+      
       values.push(value);
       index++;
     }
@@ -204,7 +208,6 @@ export const updateProduct = async (req, res) => {
         WHERE id = $${index}
         RETURNING *;
       `;
-      console.log(query);
       values.push(productId);
       result = await client.query(query, values);
     }
