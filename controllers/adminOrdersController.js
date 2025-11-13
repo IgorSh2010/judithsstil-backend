@@ -24,6 +24,7 @@ export const getOrders = async (req, res) => {
               LEFT JOIN public.users u ON o.user_id = u.id
               LEFT JOIN payments p ON o.payment_id = p.id
               WHERE o.id = $1
+              ORDER BY o.updated_at desc
             `,
             values: [id],
           }
@@ -45,6 +46,7 @@ export const getOrders = async (req, res) => {
               FROM orders o
               LEFT JOIN public.users u ON o.user_id = u.id
               LEFT JOIN payments p ON o.payment_id = p.id
+              ORDER BY o.updated_at desc
             `,
           };
 
