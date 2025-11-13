@@ -15,8 +15,7 @@ cloudinary.config({
 
 export const createProduct = async (req, res) => {
   const client = req.dbClient;
-  // sizes: [], bestseller: false, featured: false, available: true,
-  const { name, description, price, category } = req.body;
+  const { name, description, price, category, sizes, featured, bestseller} = req.body;
   let categoryId = null;
   const files = req.files;
   const uploaded = [];
@@ -28,16 +27,23 @@ export const createProduct = async (req, res) => {
     categoryId = await getCategory(client, category);
   }
 
+  if (sizes) {
+    sizes = await setSizes(sizes);
+  }
+
   try {
     await client.query("BEGIN");
     // 1️⃣ Створюємо сам товар
     const queryProduct = `
-      INSERT INTO products (title, description, price, category_id, 
+      INSERT INTO products (title, description, price, category_id, sizes 
                             is_available, is_bestseller, is_featured, updated_at)
-      VALUES ($1, $2, $3, $4, true, false, false, now())
+      VALUES ($1, $2, $3, $4, $5, true, $6, $7, now())
       RETURNING id;
     `;
-    const result = await client.query(queryProduct, [name, description || "", price, categoryId]);
+    const result = await client.query(queryProduct, 
+                                      [name, description || "", 
+                                      price, categoryId, sizes || "{}",
+                                      bestseller || false, featured || false]);
     const productId = result.rows[0].id;
 
     // 2️⃣ Завантажуємо фото на Cloudinary
@@ -77,10 +83,14 @@ export const createProduct = async (req, res) => {
       message: "Produkt pomyślnie dodany!",
       //product: { id: productId, name, price, images: uploadedUrls },
     });
+
+    await client.query("COMMIT");
   } catch (err) {
+    await client.query("ROLLBACK");
     console.error("❌ Błąd dodawania produktu:", err);
     res.status(500).json({ message: "Błąd serwera" });
   } finally {
+        await client.query("END");
         client.release(); // <-- обов’язково!
     }
 };
