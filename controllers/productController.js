@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import dotenv from "dotenv";
+import { getCategory } from "../middleware/productMiddleware.js";
 
 dotenv.config();
 
@@ -11,8 +12,10 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+
 export const createProduct = async (req, res) => {
   const client = req.dbClient;
+  //category: "", sizes: [], bestseller: false, featured: false, available: true,
   const { name, description, price } = req.body;
   const files = req.files;
   const uploaded = [];
@@ -22,6 +25,7 @@ export const createProduct = async (req, res) => {
   }
 
   try {
+    await client.query("BEGIN");
     // 1️⃣ Створюємо сам товар
     const queryProduct = `
       INSERT INTO products (title, description, price)
@@ -143,6 +147,7 @@ export const updateProduct = async (req, res) => {
   const files = req.files;
     
   try {
+    await client.query("BEGIN");
     if (!productId) {
       return res.status(400).json({ message: "Brak ID produktu" });
     }
@@ -156,24 +161,7 @@ export const updateProduct = async (req, res) => {
 
     // 🔸 Якщо прийшла категорія як назва — шукаємо або створюємо
     if (fields.category) {
-      const categoryName = fields.category.trim();
-      const catCheck = await client.query(
-        `SELECT id FROM product_categories WHERE LOWER(name) = LOWER($1)`,
-        [categoryName]
-      );
-
-      if (catCheck.rows.length > 0) {
-        categoryId = catCheck.rows[0].id;
-      } else {
-        const newCat = await client.query(
-          `INSERT INTO product_categories (name, slug) VALUES ($1, LOWER($1)) RETURNING id`,
-          [categoryName]
-        );
-        categoryId = newCat.rows[0].id;
-      }
-
-      delete fields.category;
-      fields.category_id = categoryId;
+      categoryId = await getCategory(client, fields.category);  
     }
 
     // 🔸 Обробка sizes (Postgres array)
@@ -207,8 +195,6 @@ export const updateProduct = async (req, res) => {
         WHERE id = $${index}
         RETURNING *;
       `;
-      console.log(query);
-      console.log(values);
       values.push(productId);
       result = await client.query(query, values);
     }
@@ -276,12 +262,14 @@ export const updateProduct = async (req, res) => {
     const finalProduct =
       result.rows[0] ||
       (await client.query("SELECT * FROM products WHERE id = $1", [productId])).rows[0];
-
+    await client.query("COMMIT");
     res.json({ success: true, product: finalProduct });
   } catch (err) {
+    await client.query("ROLLBACK");
     console.error("❌ Błąd aktualizacji produktu:", err);
     res.status(500).json({ message: "Błąd serwera" });
   } finally {
+        await client.query("END");
         client.release(); // <-- обов’язково!
     }
 };
