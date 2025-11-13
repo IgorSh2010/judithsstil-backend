@@ -15,24 +15,29 @@ cloudinary.config({
 
 export const createProduct = async (req, res) => {
   const client = req.dbClient;
-  //category: "", sizes: [], bestseller: false, featured: false, available: true,
-  const { name, description, price } = req.body;
+  // sizes: [], bestseller: false, featured: false, available: true,
+  const { name, description, price, category } = req.body;
+  let categoryId = null;
   const files = req.files;
   const uploaded = [];
 
   if (!name || !price) {
     return res.status(400).json({ message: "Brak wymaganych danych." });
   }
+  if (category) {
+    categoryId = await getCategory(client, category);
+  }
 
   try {
     await client.query("BEGIN");
     // 1️⃣ Створюємо сам товар
     const queryProduct = `
-      INSERT INTO products (title, description, price)
-      VALUES ($1, $2, $3)
+      INSERT INTO products (title, description, price, category_id, 
+                            is_available, is_bestseller, is_featured, updated_at)
+      VALUES ($1, $2, $3, $4, true, false, false, now())
       RETURNING id;
     `;
-    const result = await client.query(queryProduct, [name, description || "", price]);
+    const result = await client.query(queryProduct, [name, description || "", price, categoryId]);
     const productId = result.rows[0].id;
 
     // 2️⃣ Завантажуємо фото на Cloudinary
@@ -145,6 +150,7 @@ export const updateProduct = async (req, res) => {
   const productId = req.params.id;
   const fields = req.body;
   const files = req.files;
+  let categoryId = null;
     
   try {
     await client.query("BEGIN");
@@ -157,11 +163,11 @@ export const updateProduct = async (req, res) => {
       return res.status(400).json({ message: "Brak danych do aktualizacji" });
     }
 
-    let categoryId = null;
-
     // 🔸 Якщо прийшла категорія як назва — шукаємо або створюємо
     if (fields.category) {
-      categoryId = await getCategory(client, fields.category);  
+      categoryId = await getCategory(client, fields.category); 
+      delete fields.category;
+      fields.category_id = categoryId; 
     }
 
     // 🔸 Обробка sizes (Postgres array)
