@@ -49,3 +49,16 @@ export const getOrders = async (req, res) => {
     client.release();
   }
 };
+
+export const getOrderStatuses = async (req, res) => {
+  const client = req.dbClient;
+  try {
+    const result = await client.query("SELECT * FROM order_statuses");
+    res.json(result.rows);
+  } catch (err) {
+    console.error("❌ Помилка при отриманні статусів замовлень:", err);
+    res.status(500).json({ message: "Помилка сервера", error: err.message });
+  } finally {
+    client.release();
+  }
+};

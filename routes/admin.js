@@ -2,11 +2,11 @@ import express from "express";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { tenantResolver } from "../middleware/tenantResolver.js";
 import { getOrders } from "../controllers/adminOrdersController.js";
-import { requireRole } from "../middleware/requireRole.js";
+import { requireRole, getOrderStatuses } from "../middleware/requireRole.js";
 
 const router = express.Router();
 
-router.get("/order/:id", tenantResolver, authenticateToken, getOrders); 
-//router.patch("/:id", verifyToken, verifyAdmin, updateOrderStatus); requireRole("admin"),
+router.get("/order/:id", tenantResolver, authenticateToken, requireRole, getOrders); 
+router.get("/order-statuses", tenantResolver, authenticateToken, requireRole, getOrderStatuses); 
 
 export default router;
