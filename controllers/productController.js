@@ -169,10 +169,8 @@ export const updateProduct = async (req, res) => {
       fields.category_id = categoryId; 
     }
 
-    // 🔸 Обробка sizes (Postgres array)
-    if (Array.isArray(fields.sizes)) {
-      fields.sizes = `{${fields.sizes.map(s => `"${s}"`).join(",")}}`;
-    }
+    // 🔸 Додаємо sizes як Postgres array
+    fields.sizes = await setSizes(fields.sizes);
 
     // 🔸 Динамічне формування SQL
     const setClauses = [];
@@ -183,10 +181,7 @@ export const updateProduct = async (req, res) => {
       if (key === "images" || key === "removedImages") continue; // ці поля обробляються окремо
       if (key === "name") key = "title";
       setClauses.push(`${key} = $${index}`);
-      if (key === "sizes") 
-        values.push(`{${value}}`);
-      else
-        values.push(value);
+      values.push(value);
       index++;
     }
 

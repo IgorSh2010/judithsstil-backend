@@ -18,3 +18,12 @@ export const getCategory = async (client, category) => {
     return categoryId;
   }  
 };
+
+// 🔸 Обробка sizes (Postgres array)
+export const setSizes = (sizes) => {
+  if (Array.isArray(sizes)) {
+    return `{${sizes.map(s => `"${s}"`).join(",")}}`;
+  } else {
+    return `{${sizes}}`;
+  }
+};
