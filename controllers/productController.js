@@ -193,7 +193,7 @@ export const updateProduct = async (req, res) => {
         setClauses.push(`${key} = $${index}::text[]`)
       else
         setClauses.push(`${key} = $${index}`);
-      
+
       values.push(value);
       index++;
     }
@@ -208,6 +208,8 @@ export const updateProduct = async (req, res) => {
         WHERE id = $${index}
         RETURNING *;
       `;
+      console.log(query);
+      console.log(values);
       values.push(productId);
       result = await client.query(query, values);
     }
