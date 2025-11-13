@@ -150,7 +150,6 @@ export const updateProduct = async (req, res) => {
   const productId = req.params.id;
   const fields = req.body;
   const files = req.files;
-  let categoryId = null;
     
   try {
     await client.query("BEGIN");
@@ -165,7 +164,7 @@ export const updateProduct = async (req, res) => {
 
     // 🔸 Якщо прийшла категорія як назва — шукаємо або створюємо
     if (fields.category) {
-      categoryId = await getCategory(client, fields.category); 
+      const categoryId = await getCategory(client, fields.category); 
       delete fields.category;
       fields.category_id = categoryId; 
     }
