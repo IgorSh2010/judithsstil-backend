@@ -19,6 +19,8 @@ export const getOrders = async (req, res) => {
                 p.status as payment_status,
                 p.external_id as payment_external_id,
                 p.created_at as payment_date,
+                o.created_at as order_date,
+                o.updated_at as order_updated_at,
                 o.description
               FROM orders o
               LEFT JOIN public.users u ON o.user_id = u.id
@@ -42,6 +44,8 @@ export const getOrders = async (req, res) => {
                 p.status as payment_status,
                 p.external_id as payment_external_id,
                 p.created_at as payment_date, 
+                o.created_at as order_date,
+                o.updated_at as order_updated_at,
                 o.description
               FROM orders o
               LEFT JOIN public.users u ON o.user_id = u.id
