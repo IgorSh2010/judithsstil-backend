@@ -7,13 +7,14 @@ export const getCategory = async (client, category) => {
   );
 
   if (catCheck.rows.length > 0) {
-    categoryId = catCheck.rows[0].id;
+    const categoryId = catCheck.rows[0].id;
+    return categoryId;
   } else {
     const newCat = await client.query(
       `INSERT INTO product_categories (name, slug) VALUES ($1, LOWER($1)) RETURNING id`,
       [categoryName]
     );
-    categoryId = newCat.rows[0].id;
-  }
-  return categoryId;
+    const categoryId = newCat.rows[0].id;
+    return categoryId;
+  }  
 };
