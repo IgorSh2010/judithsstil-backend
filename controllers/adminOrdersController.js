@@ -14,11 +14,15 @@ export const getOrders = async (req, res) => {
                 u.phone, 
                 u.adress, 
                 o.total_price, 
-                o.status_id, 
-                o.payment_id, 
+                o.status_id,
+                p.method as payment_method, 
+                p.status as payment_status,
+                p.external_id as payment_external_id,
+                p.created_at as payment_date,
                 o.description
               FROM orders o
               LEFT JOIN public.users u ON o.user_id = u.id
+              LEFT JOIN payments p ON o.payment_id = p.id
               WHERE o.id = $1
             `,
             values: [id],
@@ -33,10 +37,14 @@ export const getOrders = async (req, res) => {
                 u.adress, 
                 o.total_price, 
                 o.status_id, 
-                o.payment_id, 
+                p.method as payment_method, 
+                p.status as payment_status,
+                p.external_id as payment_external_id,
+                p.created_at as payment_date, 
                 o.description
               FROM orders o
               LEFT JOIN public.users u ON o.user_id = u.id
+              LEFT JOIN payments p ON o.payment_id = p.id
             `,
           };
 
