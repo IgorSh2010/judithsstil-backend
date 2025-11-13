@@ -180,7 +180,7 @@ export const updateProduct = async (req, res) => {
     if (fields.sizes && Array.isArray(fields.sizes)) {
       fields.sizes = `{${fields.sizes.map(s => `"${s}"`).join(",")}}`;
     }
-
+    console.log(fields.sizes);
     // 🔸 Динамічне формування SQL
     const setClauses = [];
     const values = [];
