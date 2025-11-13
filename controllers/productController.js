@@ -15,7 +15,7 @@ cloudinary.config({
 
 export const createProduct = async (req, res) => {
   const client = req.dbClient;
-  const { name, description, price, category, sizes, featured, bestseller} = req.body;
+  let { name, description, price, category, sizes, featured, bestseller} = req.body;
   let categoryId = null;
   const files = req.files;
   const uploaded = [];
