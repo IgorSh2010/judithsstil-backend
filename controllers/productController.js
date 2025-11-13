@@ -177,11 +177,10 @@ export const updateProduct = async (req, res) => {
     }
 
     // 🔸 Обробка sizes (Postgres array)
-    //if (Array.isArray(fields.sizes)) {
+    if (Array.isArray(fields.sizes)) {
       fields.sizes = `{${fields.sizes.map(s => `"${s}"`).join(",")}}`;
-    //}
+    }
 
-    console.log(fields.sizes);
     // 🔸 Динамічне формування SQL
     const setClauses = [];
     const values = [];
@@ -205,6 +204,7 @@ export const updateProduct = async (req, res) => {
         WHERE id = $${index}
         RETURNING *;
       `;
+      console.log(query);
       values.push(productId);
       result = await client.query(query, values);
     }
