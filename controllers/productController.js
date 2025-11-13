@@ -178,7 +178,7 @@ export const updateProduct = async (req, res) => {
 
     // 🔸 Обробка sizes (Postgres array)
     if (Array.isArray(fields.sizes)) {
-      fields.sizes = `{${fields.sizes.map(s => `"${s}"`).join(",")}}`;
+      //fields.sizes = `{${fields.sizes.map(s => `"${s}"`).join(",")}}`;
     }
 
     // 🔸 Динамічне формування SQL
