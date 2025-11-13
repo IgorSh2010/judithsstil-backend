@@ -35,7 +35,7 @@ export const createProduct = async (req, res) => {
     await client.query("BEGIN");
     // 1️⃣ Створюємо сам товар
     const queryProduct = `
-      INSERT INTO products (title, description, price, category_id, sizes 
+      INSERT INTO products (title, description, price, category_id, sizes, 
                             is_available, is_bestseller, is_featured, updated_at)
       VALUES ($1, $2, $3, $4, $5, true, $6, $7, now())
       RETURNING id;
