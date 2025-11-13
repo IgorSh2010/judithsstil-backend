@@ -1,8 +1,8 @@
 import express from "express";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { tenantResolver } from "../middleware/tenantResolver.js";
-import { getOrders } from "../controllers/adminOrdersController.js";
-import { requireRole, getOrderStatuses } from "../middleware/requireRole.js";
+import { getOrders, getOrderStatuses } from "../controllers/adminOrdersController.js";
+import { requireRole } from "../middleware/requireRole.js";
 
 const router = express.Router();
 
