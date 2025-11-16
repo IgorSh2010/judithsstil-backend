@@ -116,3 +116,21 @@ export const getPaymentMethods = async (req, res) => {
     client.release();
   }
 };
+
+export const updateOrderStatus = async (req, res) => {
+  const { id } = req.params;
+  const { statusId } = req.body;
+  const client = req.dbClient;
+  try {
+    const result = await client.query(
+      "UPDATE orders SET status_id = $2 WHERE id = $1 RETURNING *",
+      [id, statusId]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("❌ Помилка при оновленні статусу замовлення:", err);
+    res.status(500).json({ message: "Помилка сервера", error: err.message });
+  } finally {
+    client.release();
+  }
+};

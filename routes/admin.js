@@ -10,4 +10,7 @@ router.get("/order/:id", tenantResolver, authenticateToken, getOrders); //requir
 router.get("/order-statuses", tenantResolver, authenticateToken, getOrderStatuses); 
 router.get("/payment-methods", tenantResolver, authenticateToken, getPaymentMethods);
 
+router.put("/update-order-status/:id", tenantResolver, authenticateToken, requireRole("admin"), updateOrderStatus);
+router.put("/update-order-payment/:id", tenantResolver, authenticateToken, requireRole("admin"), updateOrderPayment);
+
 export default router;
