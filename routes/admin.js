@@ -1,16 +1,16 @@
 import express from "express";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { tenantResolver } from "../middleware/tenantResolver.js";
-import { getOrders, getOrderStatuses, getPaymentMethods } from "../controllers/adminOrdersController.js";
+import { getOrders, getOrderStatuses, getPaymentMethods, updateOrderStatus, updateOrderPayment } from "../controllers/adminOrdersController.js";
 import { requireRole } from "../middleware/requireRole.js";
 
 const router = express.Router();
 
-router.get("/order/:id", tenantResolver, authenticateToken, getOrders); //requireRole
-router.get("/order-statuses", tenantResolver, authenticateToken, getOrderStatuses); 
-router.get("/payment-methods", tenantResolver, authenticateToken, getPaymentMethods);
+router.get("/order/:id", tenantResolver, authenticateToken, requireRole, getOrders); //requireRole
+router.get("/order-statuses", tenantResolver, authenticateToken, requireRole, getOrderStatuses); 
+router.get("/payment-methods", tenantResolver, authenticateToken, requireRole, getPaymentMethods);
 
-router.put("/update-order-status/:id", tenantResolver, authenticateToken, requireRole("admin"), updateOrderStatus);
-router.put("/update-order-payment/:id", tenantResolver, authenticateToken, requireRole("admin"), updateOrderPayment);
+router.put("/update-order-status/:id", tenantResolver, authenticateToken, requireRole, updateOrderStatus);
+router.put("/update-order-payment/:id", tenantResolver, authenticateToken, requireRole, updateOrderPayment);
 
 export default router;
