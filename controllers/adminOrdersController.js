@@ -123,13 +123,91 @@ export const updateOrderStatus = async (req, res) => {
   const client = req.dbClient;
   try {
     const result = await client.query(
-      "UPDATE orders SET status_id = $2 WHERE id = $1 RETURNING *",
+      "UPDATE orders SET status_id = $2 updated_at = now() WHERE id = $1 RETURNING *",
       [id, statusId]
     );
     res.json(result.rows[0]);
   } catch (err) {
     console.error("❌ Помилка при оновленні статусу замовлення:", err);
     res.status(500).json({ message: "Помилка сервера", error: err.message });
+  } finally {
+    client.release();
+  }
+};
+
+export const updateOrderPayment = async (req, res) => {
+  const { id } = req.params;
+  const { method } = req.body;
+  const client = req.dbClient;
+
+  try {
+    await client.query("BEGIN");
+
+    const orderRes = await client.query(
+      `SELECT * FROM orders  
+       WHERE id = $1`,
+      [id]
+    );
+
+    const order = orderRes.rows[0];
+
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    const paymentRes = await client.query(
+      `SELECT * FROM judithsstil.payments WHERE order_id = $1`,
+      [id]
+    );
+
+    let payment = paymentRes.rows[0];
+
+    if (!payment) {
+      const insertRes = await client.query(
+        `INSERT INTO payments 
+         (order_id, user_id, amount, currency, method, status)
+         VALUES ($1, $2, $3, 'PLN', $4, 'dodana przez admina')
+         RETURNING *`,
+        [
+          id,
+          order.user_id,
+          order.total_price, 
+          method
+        ]
+      );
+
+      payment = insertRes.rows[0];
+
+      await client.query(
+        `UPDATE orders 
+         SET payment_id = $2 
+         WHERE id = $1`,
+        [id, payment.id]
+      );
+    } else {
+      // 5) Якщо існує — просто оновлюємо метод
+      await client.query(
+        `UPDATE judithsstil.payments 
+         SET method = $2, updated_at = NOW() 
+         WHERE id = $1`,
+        [payment.id, method]
+      );
+    }
+
+    await client.query("COMMIT");
+
+    res.status(200).json({
+      orderUpdated: order,
+      payment
+    });
+
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("❌ Помилка при оновленні способу оплати:", err);
+    res.status(500).json({
+      message: "Помилка сервера",
+      error: err.message
+    });
   } finally {
     client.release();
   }
