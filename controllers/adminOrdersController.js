@@ -83,8 +83,6 @@ export const getOrders = async (req, res) => {
         res.json(result.rows);
       }
 
-    const result = await client.query(query);
-    res.json(result.rows);
   } catch (err) {
     console.error("❌ Помилка при отриманні замовлень:", err);
     res.status(500).json({ message: "Помилка сервера", error: err.message });
