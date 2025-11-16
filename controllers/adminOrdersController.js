@@ -189,13 +189,13 @@ export const updateOrderPayment = async (req, res) => {
     } else {
       const text = 
         is_date ? 
-        `UPDATE payment_status
+        `UPDATE payments
          SET method = $2, 
          status = 'edytowana przez admina',
          updated_at = NOW() 
          WHERE id = $1` 
          : 
-         `UPDATE payment_status
+         `UPDATE payments
          SET created_at = $2, 
          status = 'edytowana przez admina',
          updated_at = NOW() 
