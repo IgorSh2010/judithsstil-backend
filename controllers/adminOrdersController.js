@@ -3,10 +3,8 @@ export const getOrders = async (req, res) => {
   const client = req.dbClient;
 
   try {
-    const query =
-      id !== "main"
-        ? {
-            text: `
+    if (id !== "main") {
+    const orderQuery =  `
               SELECT 
                 o.id, 
                 u.username, 
@@ -27,11 +25,39 @@ export const getOrders = async (req, res) => {
               LEFT JOIN payments p ON o.payment_id = p.id
               WHERE o.id = $1
               ORDER BY o.updated_at desc
-            `,
-            values: [id],
-          }
-        : {
-            text: `
+            `;
+        const orderResult = await client.query(orderQuery, [id]);        
+
+        if (result.rows.length === 0) {
+          return res.status(404).json({ message: "Zamówienie nie znalezione." });
+        }
+
+        const order = orderResult.rows[0];
+        
+        const itemsQuery = `
+                            SELECT 
+                            oi.id,
+                            p.id AS product_id,
+                            p.title,
+                            pi.image_url,
+                            p.price AS product_price,
+                            oi.quantity,
+                            oi.price AS item_price,
+                            (oi.quantity * oi.price) AS total_item
+                            FROM order_items oi
+                            left JOIN products p ON p.id = oi.product_id
+                            left JOIN product_images pi ON pi.product_id = oi.product_id
+                            WHERE oi.order_id = $1
+                            `;
+            const itemsResult = await client.query(itemsQuery, [id]);
+
+            res.json({
+                ...order,
+                products: itemsResult.rows,
+            });
+                
+      } else {
+        const query =  `
               SELECT 
                 o.id, 
                 u.username, 
@@ -51,8 +77,11 @@ export const getOrders = async (req, res) => {
               LEFT JOIN public.users u ON o.user_id = u.id
               LEFT JOIN payments p ON o.payment_id = p.id
               ORDER BY o.updated_at desc
-            `,
-          };
+            `;
+
+        const result = await client.query(query);
+        res.json(result.rows);
+      }
 
     const result = await client.query(query);
     res.json(result.rows);
