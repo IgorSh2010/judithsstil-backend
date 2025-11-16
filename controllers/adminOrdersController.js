@@ -119,13 +119,13 @@ export const getPaymentMethods = async (req, res) => {
 
 export const updateOrderStatus = async (req, res) => {
   const { id } = req.params;
-  const { statusId } = req.body;
+  const { status_id } = req.body;
   const client = req.dbClient;
-  console.log("id", id, "statusId", statusId);
+  console.log("id", id, "statusId", status_id);
   try {
     const result = await client.query(
       "UPDATE orders SET status_id = $2, updated_at = now() WHERE id = $1 RETURNING *",
-      [id, statusId]
+      [id, status_id]
     );
     res.status(200).json(result.rows[0]);
   } catch (err) {
