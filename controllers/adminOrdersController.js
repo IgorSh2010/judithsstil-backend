@@ -138,7 +138,7 @@ export const updateOrderStatus = async (req, res) => {
 
 export const updateOrderPayment = async (req, res) => {
   const { id } = req.params;
-  const { method } = req.body;
+  const { parameter, is_date } = req.body;
   const client = req.dbClient;
 
   try {
@@ -173,7 +173,7 @@ export const updateOrderPayment = async (req, res) => {
           id,
           order.user_id,
           order.total_price, 
-          method
+          parameter
         ]
       );
 
@@ -187,14 +187,22 @@ export const updateOrderPayment = async (req, res) => {
         [id, payment.id]
       );
     } else {
-      
-      await client.query(
-        `UPDATE judithsstil.payments 
+      const text = 
+        is_date ? 
+        `UPDATE judithsstil.payment_status
          SET method = $2, 
          status = 'edytowana przez admina',
          updated_at = NOW() 
-         WHERE id = $1`,
-        [payment.id, method]
+         WHERE id = $1` 
+         : 
+         `UPDATE judithsstil.payment_status
+         SET created_at = $2, 
+         status = 'edytowana przez admina',
+         updated_at = NOW() 
+         WHERE id = $1`;
+
+      await client.query(text,
+        [payment.id, parameter]
       );
     }
 
