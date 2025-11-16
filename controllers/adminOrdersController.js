@@ -157,7 +157,7 @@ export const updateOrderPayment = async (req, res) => {
     }
 
     const paymentRes = await client.query(
-      `SELECT * FROM judithsstil.payments WHERE order_id = $1`,
+      `SELECT * FROM payments WHERE order_id = $1`,
       [id]
     );
 
@@ -189,13 +189,13 @@ export const updateOrderPayment = async (req, res) => {
     } else {
       const text = 
         is_date ? 
-        `UPDATE judithsstil.payment_status
+        `UPDATE payment_status
          SET method = $2, 
          status = 'edytowana przez admina',
          updated_at = NOW() 
          WHERE id = $1` 
          : 
-         `UPDATE judithsstil.payment_status
+         `UPDATE payment_status
          SET created_at = $2, 
          status = 'edytowana przez admina',
          updated_at = NOW() 
