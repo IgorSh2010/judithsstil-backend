@@ -28,7 +28,7 @@ export const getOrders = async (req, res) => {
             `;
         const orderResult = await client.query(orderQuery, [id]);        
 
-        if (result.rows.length === 0) {
+        if (orderResult.rows.length === 0) {
           return res.status(404).json({ message: "Zamówienie nie znalezione." });
         }
 
