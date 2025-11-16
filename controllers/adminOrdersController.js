@@ -123,7 +123,7 @@ export const updateOrderStatus = async (req, res) => {
   const client = req.dbClient;
   try {
     const result = await client.query(
-      "UPDATE orders SET status_id = $2 updated_at = now() WHERE id = $1 RETURNING *",
+      "UPDATE orders SET status_id = $2, updated_at = now() WHERE id = $1 RETURNING *",
       [id, statusId]
     );
     res.status(200).json(result.rows[0]);
@@ -180,7 +180,8 @@ export const updateOrderPayment = async (req, res) => {
 
       await client.query(
         `UPDATE orders 
-         SET payment_id = $2 
+         SET payment_id = $2,
+             updated_at = NOW() 
          WHERE id = $1`,
         [id, payment.id]
       );
