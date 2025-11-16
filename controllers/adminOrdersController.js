@@ -126,7 +126,7 @@ export const updateOrderStatus = async (req, res) => {
       "UPDATE orders SET status_id = $2 updated_at = now() WHERE id = $1 RETURNING *",
       [id, statusId]
     );
-    res.json(result.rows[0]);
+    res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error("❌ Помилка при оновленні статусу замовлення:", err);
     res.status(500).json({ message: "Помилка сервера", error: err.message });
