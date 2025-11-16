@@ -121,7 +121,7 @@ export const updateOrderStatus = async (req, res) => {
   const { id } = req.params;
   const { status_id } = req.body;
   const client = req.dbClient;
-  console.log("id", id, "statusId", status_id);
+
   try {
     const result = await client.query(
       "UPDATE orders SET status_id = $2, updated_at = now() WHERE id = $1 RETURNING *",
@@ -187,10 +187,12 @@ export const updateOrderPayment = async (req, res) => {
         [id, payment.id]
       );
     } else {
-      // 5) Якщо існує — просто оновлюємо метод
+      
       await client.query(
         `UPDATE judithsstil.payments 
-         SET method = $2, updated_at = NOW() 
+         SET method = $2, 
+         status = 'edytowana przez admina',
+         updated_at = NOW() 
          WHERE id = $1`,
         [payment.id, method]
       );
