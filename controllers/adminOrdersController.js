@@ -103,3 +103,16 @@ export const getOrderStatuses = async (req, res) => {
     client.release();
   }
 };
+
+export const getPaymentMethods = async (req, res) => {
+  const client = req.dbClient;
+  try {
+    const result = await client.query("SELECT distinct method FROM payments");
+    res.json(result.rows);
+  } catch (err) {
+    console.error("❌ Помилка при отриманні способів оплати:", err);
+    res.status(500).json({ message: "Помилка сервера", error: err.message });
+  } finally {
+    client.release();
+  }
+};
