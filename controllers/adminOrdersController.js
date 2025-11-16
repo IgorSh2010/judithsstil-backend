@@ -187,16 +187,17 @@ export const updateOrderPayment = async (req, res) => {
         [id, payment.id]
       );
     } else {
+      
       const text = 
         is_date ? 
         `UPDATE payments
-         SET method = $2, 
+         SET created_at = $2, 
          status = 'edytowana przez admina',
          updated_at = NOW() 
          WHERE id = $1` 
          : 
          `UPDATE payments
-         SET created_at = $2, 
+         SET method = $2, 
          status = 'edytowana przez admina',
          updated_at = NOW() 
          WHERE id = $1`;
