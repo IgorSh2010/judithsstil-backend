@@ -97,7 +97,7 @@ export const login = async (req, res) => {
 
     try {
       // Знаходження юзера
-      const userResult = await client.query("SELECT id, email, tenant, password FROM users WHERE email = $1 AND tenant = $2", [email, tenant]);
+      const userResult = await client.query("SELECT id, email, tenant, password FROM public.users WHERE email = $1 AND tenant = $2", [email, tenant]);
       if (userResult.rows.length === 0) {
         return res.status(400).json({ message: "Email lub hasło nie prawidłowe lub użytkownik nie zarejestrowany!" });
       }
@@ -118,7 +118,7 @@ export const login = async (req, res) => {
         const userAgent = req.headers["user-agent"];
 
         // Оновити last_login і додати запис в user_logins
-        await client.query("UPDATE users SET last_login = NOW() WHERE id = $1", [user.id]);
+        await client.query("UPDATE public.users SET last_login = NOW() WHERE id = $1", [user.id]);
         await client.query(
           `INSERT INTO user_logins (user_id, ip_address, user_agent)
            VALUES ($1, $2, $3)`,
@@ -126,7 +126,7 @@ export const login = async (req, res) => {
         );
 
         await client.query(
-          `INSERT INTO user_refresh_tokens (user_id, token, user_agent, ip_address, expires_at)
+          `INSERT INTO public.user_refresh_tokens (user_id, token, user_agent, ip_address, expires_at)
           VALUES ($1, $2, $3, $4, NOW() + interval '3 days')`,
           [user.id, refreshToken, userAgent, ip]
         );
