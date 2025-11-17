@@ -44,7 +44,7 @@ export const getClientOrder = async (req, res) => {
             const result = await client.query(`SELECT o.*, os.label as status_label  FROM orders o
                                                 left join order_statuses os 
                                                     on o.status_id = os.id 
-                                                WHERE user_id = $1`, [req.user.id]);
+                                                WHERE user_id = $1 ORDER BY o.created_at DESC`, [req.user.id]);
             res.json(result.rows);
         }
     } catch (error) {
@@ -244,7 +244,7 @@ export const createOrder = async (req, res) => {
     await Promise.all(insertItems);
 
     await client.query("COMMIT");
-    res.json({ id: orderId });
+    res.status(200).json({ id: orderId });
 
   } catch (err) {
     await client.query("ROLLBACK");
