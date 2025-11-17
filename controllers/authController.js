@@ -108,7 +108,7 @@ export const login = async (req, res) => {
         if (!match) {
           return res.status(400).json({ message: "Email lub hasło nie prawidłowe" });
         }
-
+        console.log("user", user, "match", match, "password", password,  "email", email, "tenant", tenant);
         // Генерація токена
         const token = generateToken(user);
         const refreshToken = generateRefreshToken(user);
