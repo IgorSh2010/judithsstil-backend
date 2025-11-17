@@ -210,3 +210,44 @@ export const removeCartItem = async (req, res) => {
     client.release();
   }
 };
+
+export const createOrder = async (req, res) => {
+  const client = req.dbClient;
+
+  try {
+    const userId = req.user.id;
+    const { items, total } = req.body;
+
+    if (!items || items.length === 0)
+      return res.status(400).json({ message: "Brak produktów w zamówieniu" });
+
+    // 1. Створюємо саме замовлення
+    const orderResult = await client.query(
+      `INSERT INTO orders (user_id, total_amount, status_id)
+       VALUES ($1, $2, 1)
+       RETURNING id`,
+      [userId, total]
+    );
+
+    const orderId = orderResult.rows[0].id;
+
+    // 2. Додаємо order_items
+    const insertItems = items.map((it) =>
+      client.query(
+        `INSERT INTO order_items (order_id, product_id, quantity, price)
+         VALUES ($1, $2, $3, $4)`,
+        [orderId, it.product_id, it.quantity, it.price]
+      )
+    );
+
+    await Promise.all(insertItems);
+
+    res.json({ id: orderId });
+
+  } catch (err) {
+    console.error("❌ Błąd serwera przy tworzeniu zamówienia:", err);
+    res.status(500).json({ message: "Błąd serwera", error: err.message });
+  } finally {
+    client.release();
+  }
+};

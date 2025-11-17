@@ -4,7 +4,7 @@ import { userUpdate, getMe } from "../controllers/userController.js";
 import { uploadImage, getImage } from "../controllers/settingsController.js";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { tenantResolver } from "../middleware/tenantResolver.js";
-import { getClientOrder, getClientCart, addToCart, clearCart, removeCartItem } from "../controllers/ordersController.js";
+import { getClientOrder, getClientCart, addToCart, clearCart, removeCartItem, createOrder } from "../controllers/ordersController.js";
 
 const router = express.Router();
 const upload = multer({ dest: "tmp/" }); // тимчасова папка
@@ -16,6 +16,7 @@ router.get("/client-order/:id", tenantResolver, authenticateToken, getClientOrde
 router.post("/update", authenticateToken, userUpdate); // 
 router.post("/upload-image", tenantResolver, authenticateToken, upload.single("image"), uploadImage);
 router.post("/cart", tenantResolver, authenticateToken, addToCart);
+router.post("/create-order", tenantResolver, authenticateToken, createOrder);
 
 router.delete("/clearCart", tenantResolver, authenticateToken, clearCart);
 router.delete("/remove-from-cart/:productID", tenantResolver, authenticateToken, removeCartItem);
@@ -23,10 +24,5 @@ router.delete("/remove-from-cart/:productID", tenantResolver, authenticateToken,
 
 // 🧑‍💻 Отримати поточного користувача
 router.get("/me", authenticateToken, getMe);
-
-
-// router.get("/admin-only", authMiddleware, requireRole("admin"), (req, res) => {
-//   res.json({ ok: true });
-// });
 
 export default router;
