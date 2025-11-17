@@ -108,7 +108,7 @@ export const login = async (req, res) => {
         if (!match) {
           return res.status(400).json({ message: "Email lub hasło nie prawidłowe" });
         }
-        console.log("user", user, "match", match, "password", password,  "email", email, "tenant", tenant);
+
         // Генерація токена
         const token = generateToken(user);
         const refreshToken = generateRefreshToken(user);
@@ -130,7 +130,7 @@ export const login = async (req, res) => {
           VALUES ($1, $2, $3, $4, NOW() + interval '3 days')`,
           [user.id, refreshToken, userAgent, ip]
         );
-
+        console.log("user", user, "match", match, "password", password,  "email", email, "tenant", tenant);
         // 🔹 Установка refreshToken у HttpOnly cookie
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,       // ❌ недоступна з JavaScript
