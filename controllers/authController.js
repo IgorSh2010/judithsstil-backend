@@ -112,7 +112,7 @@ export const login = async (req, res) => {
         // Генерація токена
         const token = generateToken(user);
         const refreshToken = generateRefreshToken(user);
-        console.log("user", user, "match", match, "password", password,  "email", email, "tenant", tenant);
+        
         // Отримати IP і User-Agent
         const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
         const userAgent = req.headers["user-agent"];
@@ -120,11 +120,11 @@ export const login = async (req, res) => {
         // Оновити last_login і додати запис в user_logins
         await client.query("UPDATE public.users SET last_login = NOW() WHERE id = $1", [user.id]);
         await client.query(
-          `INSERT INTO user_logins (user_id, ip_address, user_agent)
+          `INSERT INTO public.user_logins (user_id, ip_address, user_agent)
            VALUES ($1, $2, $3)`,
           [user.id, ip, userAgent]
         );
-
+        console.log("user", user, "match", match, "password", password,  "email", email, "tenant", tenant);
         await client.query(
           `INSERT INTO public.user_refresh_tokens (user_id, token, user_agent, ip_address, expires_at)
           VALUES ($1, $2, $3, $4, NOW() + interval '3 days')`,
