@@ -112,7 +112,7 @@ export const login = async (req, res) => {
         // Генерація токена
         const token = generateToken(user);
         const refreshToken = generateRefreshToken(user);
-
+        console.log("user", user, "match", match, "password", password,  "email", email, "tenant", tenant);
         // Отримати IP і User-Agent
         const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
         const userAgent = req.headers["user-agent"];
@@ -130,7 +130,7 @@ export const login = async (req, res) => {
           VALUES ($1, $2, $3, $4, NOW() + interval '3 days')`,
           [user.id, refreshToken, userAgent, ip]
         );
-        console.log("user", user, "match", match, "password", password,  "email", email, "tenant", tenant);
+        console.log("user1", user, "match", match, "password", password,  "email", email, "tenant", tenant);
         // 🔹 Установка refreshToken у HttpOnly cookie
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,       // ❌ недоступна з JavaScript
