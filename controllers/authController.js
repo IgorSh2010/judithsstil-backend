@@ -116,7 +116,7 @@ export const login = async (req, res) => {
         // Отримати IP і User-Agent
         const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
         const userAgent = req.headers["user-agent"];
-        console.log("user", user, "match", match, "password", password,  "email", email, "tenant", tenant);
+        
         // Оновити last_login і додати запис в user_logins
         await client.query("UPDATE public.users SET last_login = NOW() WHERE id = $1", [user.id]);
         await client.query(
@@ -130,7 +130,7 @@ export const login = async (req, res) => {
           VALUES ($1, $2, $3, $4, NOW() + interval '3 days')`,
           [user.id, refreshToken, userAgent, ip]
         );
-        console.log("user1", user, "match", match, "password", password,  "email", email, "tenant", tenant);
+        
         // 🔹 Установка refreshToken у HttpOnly cookie
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,       // ❌ недоступна з JavaScript
