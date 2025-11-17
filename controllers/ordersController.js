@@ -215,6 +215,7 @@ export const createOrder = async (req, res) => {
   const client = req.dbClient;
 
   try {
+    await client.query("BEGIN");
     const userId = req.user.id;
     const { items, total } = req.body;
 
@@ -223,7 +224,7 @@ export const createOrder = async (req, res) => {
 
     // 1. Створюємо саме замовлення
     const orderResult = await client.query(
-      `INSERT INTO orders (user_id, total_amount, status_id)
+      `INSERT INTO orders (user_id, total_price, status_id)
        VALUES ($1, $2, 1)
        RETURNING id`,
       [userId, total]
@@ -242,9 +243,11 @@ export const createOrder = async (req, res) => {
 
     await Promise.all(insertItems);
 
+    await client.query("COMMIT");
     res.json({ id: orderId });
 
   } catch (err) {
+    await client.query("ROLLBACK");
     console.error("❌ Błąd serwera przy tworzeniu zamówienia:", err);
     res.status(500).json({ message: "Błąd serwera", error: err.message });
   } finally {
