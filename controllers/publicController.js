@@ -172,7 +172,7 @@ export const getProducts = async (req, res) => {
         LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
         GROUP BY p.id, pc.name, pc.slug
         ORDER BY p.created_at DESC
-        LIMIT $2 OFFSET $3;
+        LIMIT $1 OFFSET $2;
       `;
       values = [limit, offset];
     }
