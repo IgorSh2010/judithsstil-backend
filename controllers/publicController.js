@@ -74,8 +74,9 @@ export const getProducts = async (req, res) => {
   const client = await getClientPool();
   try {
     const { id } = req.params;
-    const { category } = req.query; // ✅ додаємо query параметр
-  
+    const { category = "all", page = 1, limit = 20 } = req.query; // ✅ додаємо query параметр і пагінацію за замовчуванням
+    const offset = (page - 1) * limit;
+
     let products;
 
     // --- 🔹 Якщо запит з ID — повертаємо конкретний продукт
@@ -144,9 +145,10 @@ export const getProducts = async (req, res) => {
         LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
         WHERE pc.slug = $1
         GROUP BY p.id, pc.name, pc.slug
-        ORDER BY p.created_at DESC;
+        ORDER BY p.created_at DESC
+        LIMIT $2 OFFSET $3;
       `;
-      values = [category];
+      values = [category, limit, offset];
     } else {
       // --- 🔹 Без фільтра: всі продукти
       query = `
@@ -169,9 +171,12 @@ export const getProducts = async (req, res) => {
         LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
         LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
         GROUP BY p.id, pc.name, pc.slug
-        ORDER BY p.created_at DESC;
+        ORDER BY p.created_at DESC
+        LIMIT $2 OFFSET $3;
       `;
     }
+
+    const total = await client.query( `SELECT count(*) FROM products p` );
 
     const result = await client.query(query, values);
     products = result.rows.map((p) => ({
@@ -179,7 +184,11 @@ export const getProducts = async (req, res) => {
       images: typeof p.images === "string" ? JSON.parse(p.images) : p.images,
     }));
 
-    res.json(products);
+    res.json({
+              items: products,
+              total: Number(total.rows[0].count),
+              totalPages: Math.ceil(total.rows[0].count / limit),
+            })
   } catch (err) {
     console.error("❌ Błąd pobierania produktów:", err);
     res.status(500).json({ message: "Błąd serwera" });
