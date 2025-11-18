@@ -176,7 +176,7 @@ export const getProducts = async (req, res) => {
       `;
     }
 
-    const total = await client.query( `SELECT count(*) FROM products p` );
+    const total = await client.query( `SELECT count(*) FROM judithsstil.products p` );
 
     const result = await client.query(query, values);
     products = result.rows.map((p) => ({
