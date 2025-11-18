@@ -74,7 +74,7 @@ export const getProducts = async (req, res) => {
   const client = await getClientPool();
   try {
     const { id } = req.params;
-    const { category = "all", page = 1, limit = 20 } = req.query; // ✅ додаємо query параметр і пагінацію за замовчуванням
+    const { category = "all", page = 1, limit = 18 } = req.query; // ✅ додаємо query параметр і пагінацію за замовчуванням
     const offset = (page - 1) * limit;
 
     let products;
@@ -174,6 +174,7 @@ export const getProducts = async (req, res) => {
         ORDER BY p.created_at DESC
         LIMIT $2 OFFSET $3;
       `;
+      values = [limit, offset];
     }
 
     const total = await client.query( `SELECT count(*) FROM judithsstil.products p` );
