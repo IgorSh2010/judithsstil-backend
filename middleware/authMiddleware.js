@@ -1,7 +1,5 @@
-import express from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-//import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -16,11 +14,11 @@ export const authenticateToken = (req, res, next) => {
       token = authHeader.split(" ")[1];
     }
     
-    if (!token) return res.status(401).json({ message: "Токен відсутній" });
+    if (!token) return res.status(401).json({ message: "Token not found" });
 
     // 3) верифікуємо
     const decoded = jwt.verify(token, JWT_SECRET);
-    if (!decoded) return res.status(401).json({ message: "Недійсний токен або невалідний" });
+    if (!decoded) return res.status(401).json({ message: "Invalid token" });
 
     // підкладемо payload у req.user
     req.user = decoded;
