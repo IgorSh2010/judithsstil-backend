@@ -1,4 +1,4 @@
-function apiError(res, status, message, code = "ERROR") {
+export function apiError(res, status, message, code = "ERROR") {
     return res.status(status).json({
         ok: false,
         error: {
