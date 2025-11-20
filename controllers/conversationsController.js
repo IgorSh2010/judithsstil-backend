@@ -1,3 +1,5 @@
+import { apiError } from "../models/errorModel.js";
+
 export const fetchMessages = async (req, res) => {
     const conversationId = req.params.id;
     const client = req.dbClient;
@@ -6,7 +8,7 @@ export const fetchMessages = async (req, res) => {
 
     if (!userId) {
         client.release();
-        return res.status(401).json({ message: "Unauthorized" });
+        return apiError(res, 401, "Brak autoryzacji", "NO_AUTH");
     }
 
     try {
@@ -18,7 +20,7 @@ export const fetchMessages = async (req, res) => {
 
         if (convCheck.rowCount === 0) {
             //client.release();
-            return res.status(500).json({ message: "Conversation not found" });
+            return apiError(res, 404, "Rozmowa nie istnieje", "NOT_FOUND");
         }
 
         const conversationOwnerId = convCheck.rows[0].user_id;
@@ -26,7 +28,7 @@ export const fetchMessages = async (req, res) => {
         // Якщо користувач не адмін і не власник розмови → зась
         if (role !== "admin" && user_id !== userId) {
             //client.release();
-            return res.status(500).json({ message: "Forbidden" });
+            return apiError(res, 403, "Nie masz uprawnień do tej rozmowy", "FORBIDDEN");
         }
 
         // 2) Тягнемо всі повідомлення по розмові
@@ -47,7 +49,7 @@ export const fetchMessages = async (req, res) => {
         res.json(messagesResult.rows);
     } catch (err) {
         console.error("❌ Помилка при отриманні повідомлень:", err);
-        res.status(500).json({ message: "Server error", error: err.message });
+        apiError(res, 500, "Server error", err.message);
     } finally {
         client.release();
     }
