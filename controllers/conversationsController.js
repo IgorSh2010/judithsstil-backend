@@ -4,7 +4,6 @@ export const fetchMessages = async (req, res) => {
     const conversationId = req.params.id;
     const client = req.dbClient;
     const userId = req.user?.id;
-    const role = req.user?.role;
 
     if (!userId) {
         client.release();
@@ -12,9 +11,17 @@ export const fetchMessages = async (req, res) => {
     }
 
     try {
+        //0) Перевіряємо, роль користувача
+        const userResult = await client.query(
+            `SELECT role FROM public.users WHERE id = $1`,
+            [userId]
+        );
+
+        const role = userResult.rows[0]?.role;
+
         // 1) Перевіряємо, чи існує така розмова та чи має користувач право на неї
         const convCheck = await client.query(
-            `SELECT user_id FROM conversations WHERE id = $1`,
+            `SELECT user_id_1, user_id_2 FROM conversations WHERE id = $1`,
             [conversationId]
         );
 
@@ -25,7 +32,7 @@ export const fetchMessages = async (req, res) => {
 
         const conversationOwnerId = convCheck.rows[0].user_id;
 
-        // Якщо користувач не адмін і не власник розмови → зась
+        // Якщо користувач не адмін і не учасник розмови → зась
         if (role !== "admin" && conversationOwnerId !== userId) {
             //client.release();
             return apiError(res, 403, "Nie masz uprawnień do tej rozmowy", "FORBIDDEN");
