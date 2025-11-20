@@ -45,8 +45,9 @@ export const fetchMessages = async (req, res) => {
                 conversation_id, 
                 sender_id,
                 content,
-                created_at,
-                sender_role
+                is_read,
+                unread_count,
+                created_at                
             FROM messages 
             WHERE conversation_id = $1
             ORDER BY created_at ASC`,
