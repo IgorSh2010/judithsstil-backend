@@ -21,7 +21,7 @@ export const fetchMessages = async (req, res) => {
 
         // 1) Перевіряємо, чи існує така розмова та чи має користувач право на неї
         const convCheck = await client.query(
-            `SELECT user_id_1, user_id_2 FROM conversations WHERE id = $1`,
+            `SELECT user_id FROM conversations WHERE id = $1`,
             [conversationId]
         );
 
