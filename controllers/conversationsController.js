@@ -17,16 +17,16 @@ export const fetchMessages = async (req, res) => {
         );
 
         if (convCheck.rowCount === 0) {
-            client.release();
-            return res.status(404).json({ message: "Conversation not found" });
+            //client.release();
+            return res.status(500).json({ message: "Conversation not found" });
         }
 
         const conversationOwnerId = convCheck.rows[0].user_id;
 
         // Якщо користувач не адмін і не власник розмови → зась
-        if (role !== "admin" && conversationOwnerId !== userId) {
-            client.release();
-            return res.status(403).json({ message: "Forbidden" });
+        if (role !== "admin" && user_id !== userId) {
+            //client.release();
+            return res.status(500).json({ message: "Forbidden" });
         }
 
         // 2) Тягнемо всі повідомлення по розмові
