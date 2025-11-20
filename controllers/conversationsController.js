@@ -26,7 +26,7 @@ export const fetchMessages = async (req, res) => {
         const conversationOwnerId = convCheck.rows[0].user_id;
 
         // Якщо користувач не адмін і не власник розмови → зась
-        if (role !== "admin" && user_id !== userId) {
+        if (role !== "admin" && conversationOwnerId !== userId) {
             //client.release();
             return apiError(res, 403, "Nie masz uprawnień do tej rozmowy", "FORBIDDEN");
         }
