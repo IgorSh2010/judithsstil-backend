@@ -5,7 +5,7 @@ import { uploadImage, getImage } from "../controllers/settingsController.js";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { tenantResolver } from "../middleware/tenantResolver.js";
 import { getClientOrder, getClientCart, addToCart, clearCart, removeCartItem, createOrder } from "../controllers/ordersController.js";
-import { fetchMessages, sendMessageToConversation } from "../controllers/conversationsController.js";
+import { fetchMessages, sendMessageToConversation, pollConversationUpdates } from "../controllers/conversationsController.js";
 
 const router = express.Router();
 const upload = multer({ dest: "tmp/" }); // тимчасова папка
@@ -14,6 +14,7 @@ router.get("/get-image", tenantResolver, authenticateToken, getImage);
 router.get("/cart", tenantResolver, authenticateToken, getClientCart);
 router.get("/client-order/:id", tenantResolver, authenticateToken, getClientOrder);
 router.get("/messages/:id", tenantResolver, authenticateToken, fetchMessages);
+router.get("/messages/:id/poll", tenantResolver, authenticateToken, pollConversationUpdates);
 
 router.post("/update", authenticateToken, userUpdate); // 
 router.post("/upload-image", tenantResolver, authenticateToken, upload.single("image"), uploadImage);

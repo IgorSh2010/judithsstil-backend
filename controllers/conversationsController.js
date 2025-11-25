@@ -68,7 +68,7 @@ export const fetchMessages = async (req, res) => {
 
 export const sendMessageToConversation = async (req, res) => {
     const conversationId = req.params.id;
-    const message = req.body.context;
+    const message = req.body.content;
     const client = req.dbClient;
     const userId = req.user?.id;
 
@@ -128,6 +128,86 @@ export const sendMessageToConversation = async (req, res) => {
         console.error("❌ Помилка при відправленні повідомлення:", err);
         apiError(res, 500, "Server error", err.message);
     } finally {
+        client.release();
+    }
+};
+
+export const pollConversationUpdates = async (req, res) => {
+    const conversationId = req.params.id;
+    const lastMessageId = Number(req.query.lastMessageId || 0);
+
+    const client = req.dbClient;
+    const userId = req.user?.id;
+
+    if (!userId) {
+        client.release();
+        return apiError(res, 401, "Brak autoryzacji", "NO_AUTH");
+    }
+
+    try {
+        // Перевірка прав
+        const convCheck = await client.query(
+            `SELECT user_id FROM conversations WHERE id = $1`,
+            [conversationId]
+        );
+
+        if (convCheck.rowCount === 0) {
+            return apiError(res, 404, "Rozmowa nie istnieje", "NOT_FOUND");
+        }
+
+        const ownerId = convCheck.rows[0].user_id;
+
+        const roleRes = await client.query(`SELECT role FROM users WHERE id=$1`, [userId]);
+        const role = roleRes.rows[0]?.role;
+
+        if (role !== "admin" && ownerId !== userId) {
+            return apiError(res, 403, "Nie masz uprawnień", "FORBIDDEN");
+        }
+
+        // Функція періодичної перевірки
+        const checkForNew = async () => {
+            const newMessages = await client.query(
+                `SELECT 
+                    m.id,
+                    m.sender_id,
+                    u.username,
+                    u.email,
+                    m.content,
+                    m.created_at
+                 FROM messages m
+                 LEFT JOIN users u ON u.id = m.sender_id
+                 WHERE m.conversation_id = $1 AND m.id > $2
+                 ORDER BY m.id ASC`,
+                 [conversationId, lastMessageId]
+            );
+
+            return newMessages.rows;
+        };
+
+        let waited = 0;
+        const interval = 500;    // кожні 0.5с перевіряємо
+        const timeout = 30000;   // максимум 30с
+
+        const polling = setInterval(async () => {
+            const newMessages = await checkForNew();
+
+            if (newMessages.length > 0) {
+                clearInterval(polling);
+                client.release();
+                return res.json({ messages: newMessages });
+            }
+
+            waited += interval;
+            if (waited >= timeout) {
+                clearInterval(polling);
+                client.release();
+                return res.status(204).send(); // Нічого нового
+            }
+        }, interval);
+
+    } catch (err) {
+        console.error("❌ Помилка long polling:", err);
+        apiError(res, 500, "Server error", err.message);
         client.release();
     }
 };
