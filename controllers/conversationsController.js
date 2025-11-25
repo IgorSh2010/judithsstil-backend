@@ -49,7 +49,6 @@ export const fetchMessages = async (req, res) => {
 			    END AS participant,
                 content,
                 is_read,
-                unread_count,
                 m.created_at                
             FROM judithsstil.messages m
             left join users u on u.id = sender_id
@@ -66,3 +65,70 @@ export const fetchMessages = async (req, res) => {
         client.release();
     }
 };
+
+export const sendMessageToConversation = async (req, res) => {
+    const conversationId = req.params.id;
+    const message = req.body.context;
+    const client = req.dbClient;
+    const userId = req.user?.id;
+
+    if (!userId) {
+        client.release();
+        return apiError(res, 401, "Brak autoryzacji", "NO_AUTH");
+    }
+
+    try {
+        //0) Перевіряємо, роль користувача
+        const userResult = await client.query(
+            `SELECT role FROM public.users WHERE id = $1`,
+            [userId]
+        );
+
+        const role = userResult.rows[0]?.role;
+
+        // 1) Перевіряємо, чи існує така розмова та чи має користувач право на неї
+        const convCheck = await client.query(
+            `SELECT user_id FROM conversations WHERE id = $1`,
+            [conversationId]
+        );
+
+        if (convCheck.rowCount === 0) {
+            //client.release();
+            return apiError(res, 404, "Rozmowa nie istnieje", "NOT_FOUND");
+        }
+
+        const conversationOwnerId = convCheck.rows[0].user_id;
+
+        // Якщо користувач не адмін і не учасник розмови → зась
+        if (role !== "admin" && conversationOwnerId !== userId) {
+            //client.release();
+            return apiError(res, 403, "Nie masz uprawnień do tej rozmowy", "FORBIDDEN");
+        }
+
+        // 2) Додаємо повідомлення
+        const messageResult = await client.query(
+            `INSERT INTO messages (conversation_id, sender_id, content)
+             VALUES ($1, $2, $3) RETURNING id`,
+            [conversationId, userId, message]
+        );
+
+        const messageId = messageResult.rows[0].id;
+
+        // 3) Оновлюємо кількість непрочитаних повідомлень
+        await client.query(
+            `UPDATE conversations 
+             SET unread_count = unread_count + 1,
+                 updated_at = now() 
+             WHERE id = $1`,
+            [conversationId]
+        );
+
+        
+    } catch (err) {
+        console.error("❌ Помилка при відправленні повідомлення:", err);
+        apiError(res, 500, "Server error", err.message);
+    } finally {
+        client.release();
+    }
+};
+
