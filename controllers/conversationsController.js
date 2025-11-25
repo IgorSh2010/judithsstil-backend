@@ -42,16 +42,19 @@ export const fetchMessages = async (req, res) => {
         const messagesResult = await client.query(
             `SELECT 
                 id, 
-                conversation_id, 
-                sender_id,
+                conversation_id,
+                CASE
+			        WHEN sender_id = $2 THEN 'me'
+			        ELSE 'interlocutor'
+			    END AS participant,
                 content,
                 is_read,
                 unread_count,
                 created_at                
-            FROM messages 
+            FROM judithsstil.messages 
             WHERE conversation_id = $1
-            ORDER BY created_at ASC`,
-            [conversationId]
+            ORDER BY created_at ASC;`,
+            [conversationId, userId]
         );
 
         res.json(messagesResult.rows);
