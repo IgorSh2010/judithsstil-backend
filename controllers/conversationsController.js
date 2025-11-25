@@ -68,7 +68,7 @@ export const fetchMessages = async (req, res) => {
 
 export const sendMessageToConversation = async (req, res) => {
     const conversationId = req.params.id;
-    const message = req.body.content;
+    const { content } = req.body;
     const client = req.dbClient;
     const userId = req.user?.id;
 
@@ -109,7 +109,7 @@ export const sendMessageToConversation = async (req, res) => {
         const messageResult = await client.query(
             `INSERT INTO messages (conversation_id, sender_id, content)
              VALUES ($1, $2, $3) RETURNING id`,
-            [conversationId, userId, message]
+            [conversationId, userId, content]
         );
 
         const messageId = messageResult.rows[0].id;
