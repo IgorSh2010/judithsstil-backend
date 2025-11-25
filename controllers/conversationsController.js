@@ -41,7 +41,7 @@ export const fetchMessages = async (req, res) => {
         // 2) Тягнемо всі повідомлення по розмові
         const messagesResult = await client.query(
             `SELECT 
-                id, 
+                m.id, 
                 conversation_id,
                 CASE
 			        WHEN sender_id = $2 THEN 'me'
@@ -51,7 +51,7 @@ export const fetchMessages = async (req, res) => {
                 is_read,
                 unread_count,
                 created_at                
-            FROM judithsstil.messages 
+            FROM judithsstil.messages m
             left join users u on u.id = sender_id
             WHERE conversation_id = $1
             ORDER BY created_at ASC;`,
