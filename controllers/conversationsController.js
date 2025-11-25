@@ -50,11 +50,11 @@ export const fetchMessages = async (req, res) => {
                 content,
                 is_read,
                 unread_count,
-                created_at                
+                m.created_at                
             FROM judithsstil.messages m
             left join users u on u.id = sender_id
             WHERE conversation_id = $1
-            ORDER BY created_at ASC;`,
+            ORDER BY m.created_at ASC;`,
             [conversationId, userId]
         );
 
