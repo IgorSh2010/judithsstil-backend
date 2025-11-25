@@ -45,7 +45,7 @@ export const fetchMessages = async (req, res) => {
                 conversation_id,
                 CASE
 			        WHEN sender_id = $2 THEN 'me'
-			        ELSE u.username + ' (' + u.email + ')'
+			        ELSE COALESCE(u.username, 'unknown') || ' (' || u.email || ')'
 			    END AS participant,
                 content,
                 is_read,
