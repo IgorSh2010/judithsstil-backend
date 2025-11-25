@@ -45,13 +45,14 @@ export const fetchMessages = async (req, res) => {
                 conversation_id,
                 CASE
 			        WHEN sender_id = $2 THEN 'me'
-			        ELSE 'interlocutor'
+			        ELSE u.username + ' (' + u.email + ')'
 			    END AS participant,
                 content,
                 is_read,
                 unread_count,
                 created_at                
             FROM judithsstil.messages 
+            left join users u on u.id = sender_id
             WHERE conversation_id = $1
             ORDER BY created_at ASC;`,
             [conversationId, userId]
