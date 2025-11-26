@@ -69,6 +69,7 @@ export const fetchMessages = async (req, res) => {
 export const sendMessageToConversation = async (req, res) => {
     const conversationId = req.params.id;
     const { content } = req.body;
+    console.log("body - ", req.body, "content - ", content);
     const client = req.dbClient;
     const userId = req.user?.id;
 
