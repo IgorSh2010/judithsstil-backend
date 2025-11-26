@@ -68,7 +68,6 @@ export const fetchMessages = async (req, res) => {
 
 export const sendMessageToConversation = async (req, res) => {
     const conversationId = req.params.id;
-    console.log("body - ", req.body);//, "content - ", content);
     const { content } = req.body;    
     const client = req.dbClient;
     const userId = req.user?.id;
@@ -137,7 +136,7 @@ export const sendMessageToConversation = async (req, res) => {
 export const pollConversationUpdates = async (req, res) => {
     const conversationId = req.params.id;
     const lastMessageId = Number(req.query.lastMessageId || 0);
-
+    console.log("lastMessageId - ", lastMessageId, "req.query.lastMessageId - ", req.query.lastMessageId);
     const client = req.dbClient;
     const userId = req.user?.id;
 
