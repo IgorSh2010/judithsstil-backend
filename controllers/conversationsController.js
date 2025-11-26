@@ -68,8 +68,8 @@ export const fetchMessages = async (req, res) => {
 
 export const sendMessageToConversation = async (req, res) => {
     const conversationId = req.params.id;
-    const { content } = req.body;
     console.log("body - ", req.body, "content - ", content);
+    const { content } = req.body;    
     const client = req.dbClient;
     const userId = req.user?.id;
 
@@ -113,7 +113,7 @@ export const sendMessageToConversation = async (req, res) => {
             [conversationId, userId, content]
         );
 
-        const messageId = messageResult.rows[0].id;
+        //const messageId = messageResult.rows[0].id;
 
         // 3) Оновлюємо кількість непрочитаних повідомлень
         await client.query(
@@ -124,6 +124,7 @@ export const sendMessageToConversation = async (req, res) => {
             [conversationId]
         );
 
+        //res.json({ messageId });
         
     } catch (err) {
         console.error("❌ Помилка при відправленні повідомлення:", err);
