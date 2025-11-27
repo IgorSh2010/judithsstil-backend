@@ -10,26 +10,18 @@ export const getConversations = async (req, res) => {
     }
 
     try {
-        //0) Перевіряємо, роль користувача
-        const userResult = await client.query(
-            `SELECT role FROM public.users WHERE id = $1`,
-            [userId]
-        );
-
-        const role = userResult.rows[0]?.role;
-
-        // 2) Тягнемо всі розмови, які має користувач
+        // Тягнемо всі розмови, які має користувач, або які має адмін
         const conversationsResult = await client.query(
             `SELECT 
                 id, order_id, updated_at, unread_count, title
             FROM conversations
-            WHERE user_id = $1;`, [userId]
+            WHERE user_id = $1 OR admin_id = $1;`, [userId]
         );
 
         const conversations = conversationsResult.rows[0];
 
-        // Якщо користувач не адмін і не учасник розмови → зась
-        if (role !== "admin" && conversations.rowCount === 0 ) {
+        // Якщо таких розмов нема → зась
+        if ( conversations.rowCount === 0 ) {
             client.release();
             return apiError(res, 403, "Brak dostępu", "FORBIDDEN");
         }       
