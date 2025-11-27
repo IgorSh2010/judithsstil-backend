@@ -57,6 +57,10 @@ export const register = async (req, res) => {
     const newUser = result.rows[0];
     const token = generateToken(newUser);
     const refreshToken = generateRefreshToken(newUser);
+    
+    // Отримуємо IP і User-Agent
+    const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    const userAgent = req.headers["user-agent"];
 
     await client.query(
           `INSERT INTO user_refresh_tokens (user_id, token, user_agent, ip_address, expires_at)
