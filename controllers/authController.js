@@ -61,7 +61,7 @@ export const register = async (req, res) => {
     await client.query(
           `INSERT INTO user_refresh_tokens (user_id, token, user_agent, ip_address, expires_at)
           VALUES ($1, $2, $3, $4, NOW() + interval '3 days')`,
-          [user.id, refreshToken, userAgent, ip]
+          [newUser.id, refreshToken, userAgent, ip]
         );
 
         // 🔹 Установка refreshToken у HttpOnly cookie
