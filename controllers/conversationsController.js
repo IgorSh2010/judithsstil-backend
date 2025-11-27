@@ -112,7 +112,7 @@ export const sendMessageToConversation = async (req, res) => {
             [conversationId, userId, content]
         );
 
-        //const messageId = messageResult.rows[0].id;
+        const messageId = messageResult.rows[0].id;
 
         // 3) Оновлюємо кількість непрочитаних повідомлень
         await client.query(
@@ -123,7 +123,7 @@ export const sendMessageToConversation = async (req, res) => {
             [conversationId]
         );
 
-        //res.json({ messageId });
+        res.json({ messageId });
         
     } catch (err) {
         console.error("❌ Помилка при відправленні повідомлення:", err);
