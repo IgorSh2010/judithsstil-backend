@@ -18,34 +18,24 @@ export const getConversations = async (req, res) => {
 
         const role = userResult.rows[0]?.role;
 
-        // 1) Перевіряємо, чи існує така розмова та чи має користувач право на неї
-        const convCheck = await client.query(
-            `SELECT user_id FROM conversations WHERE id = $1`,
-            [conversationId]
-        );
-
-        if (convCheck.rowCount === 0) {
-            //client.release();
-            return apiError(res, 404, "Rozmowa nie istnieje", "NOT_FOUND");
-        }
-
-        const conversationOwnerId = convCheck.rows[0].user_id;
-
-        // Якщо користувач не адмін і не учасник розмови → зась
-        if (role !== "admin" && conversationOwnerId !== userId) {
-            //client.release();
-            return apiError(res, 403, "Brak dostępu", "FORBIDDEN");
-        }
-
         // 2) Тягнемо всі розмови, які має користувач
         const conversationsResult = await client.query(
             `SELECT 
                 id, order_id, updated_at, unread_count, title
-            FROM judithsstil.conversations
+            FROM conversations
             WHERE user_id = $1;`, [userId]
         );
 
+        const conversations = conversationsResult.rows[0];
+
+        // Якщо користувач не адмін і не учасник розмови → зась
+        if (role !== "admin" && conversations.rowCount === 0 ) {
+            client.release();
+            return apiError(res, 403, "Brak dostępu", "FORBIDDEN");
+        }       
+
         res.json(conversationsResult.rows);
+        
     } catch (err) {
         console.error("Błąd podczas pobierania rozmów:", err);
         res.status(500).json({ message: "Błąd serwera podczas pobierania rozmów." });
