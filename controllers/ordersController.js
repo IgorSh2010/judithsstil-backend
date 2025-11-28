@@ -70,6 +70,10 @@ export const getClientCart = async (req, res) => {
                                            left join carts c on c.id = ci.cart_id
                                            WHERE c.user_id = $1 AND c.is_finished = false
                                            GROUP BY ci.id, ci.product_id, ci.quantity, ci.price, p.title`, [req.user.id]);
+        if (result.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ message: "Koszyk jest pusty." });
+        }
         
         const total = await client.query(`SELECT amount FROM carts 
                                           WHERE user_id = $1 AND is_finished = false`, [req.user.id]);                                   
@@ -77,6 +81,7 @@ export const getClientCart = async (req, res) => {
         res.json({ amount: total.rows[0].amount, items: result.rows});
     } catch (error) {
         console.error("Błąd podczas pobierania koszyka:", error);
+        client.release();
         res.status(500).json({ message: "Błąd serwera podczas pobierania koszyka." });
     } finally {
         client.release(); // <-- обов’язково!
