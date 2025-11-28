@@ -74,7 +74,7 @@ export const getClientCart = async (req, res) => {
             client.release();
             return res.status(404).json({ message: "Koszyk jest pusty." });
         }
-        
+
         const total = await client.query(`SELECT amount FROM carts 
                                           WHERE user_id = $1 AND is_finished = false`, [req.user.id]);                                   
         
@@ -254,7 +254,7 @@ export const createOrder = async (req, res) => {
     await client.query(
       `INSERT INTO conversations (order_id, user_id, admin_id, status, unread_count, title)
        VALUES ($1, $2)`,
-      [orderId, userId, 7, "open", 0, "Rozmówka o zamówieniu #" +  orderId.toString().padStart(6, "0")]
+      [orderId, userId, 7, "open", 0, "Rozmówka o zamówieniu #" + orderId] // [orderId.toString().padStart(6, "0")]
     );
 
     await Promise.all(insertItems);
