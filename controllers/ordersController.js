@@ -141,10 +141,10 @@ export const addToCart = async (req, res) => {
     });
   } catch (error) {
     await client.query("ROLLBACK");
-    console.error("Błąd podczas dodawania do koszyka:", error);
-    res.status(500).json({ message: "Błąd serwera podczas dodawania koszyka." });
+      console.error("Błąd podczas dodawania do koszyka:", error);
+      res.status(500).json({ message: "Błąd serwera podczas dodawania koszyka." });
   } finally {
-    client.release();
+      client.release();
   }
 };
 
@@ -164,10 +164,10 @@ export const clearCart = async (req, res) => {
     res.json({ message: "Koszyk został wyczyszczony." });
   } catch (error) {
     await client.query("ROLLBACK");
-    console.error("Błąd podczas czyszczenia koszyka:", error);
-    res.status(500).json({ message: "Błąd serwera podczas czyszczenia koszyka." });
+      console.error("Błąd podczas czyszczenia koszyka:", error);
+      res.status(500).json({ message: "Błąd serwera podczas czyszczenia koszyka." });
   } finally {
-    client.release();
+      client.release();
   }
 };
 
@@ -241,6 +241,13 @@ export const createOrder = async (req, res) => {
       )
     );
 
+    // 3. Створюємо розмову між користувачем та адміном до цього замовлення
+    await client.query(
+      `INSERT INTO conversations (order_id, user_id, admin_id, status, unread_count, title)
+       VALUES ($1, $2)`,
+      [orderId, userId, 7, "open", 0, "Rozmówka o zamówieniu #" +  orderId.toString().padStart(6, "0")]
+    );
+
     await Promise.all(insertItems);
 
     await client.query("COMMIT");
@@ -248,9 +255,9 @@ export const createOrder = async (req, res) => {
 
   } catch (err) {
     await client.query("ROLLBACK");
-    console.error("❌ Błąd serwera przy tworzeniu zamówienia:", err);
-    res.status(500).json({ message: "Błąd serwera", error: err.message });
+      console.error("❌ Błąd serwera przy tworzeniu zamówienia:", err);
+      res.status(500).json({ message: "Błąd serwera", error: err.message });
   } finally {
-    client.release();
+      client.release();
   }
 };

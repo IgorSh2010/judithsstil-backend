@@ -246,6 +246,8 @@ export const pollConversationUpdates = async (req, res) => {
         console.error("❌ Помилка long polling:", err);
         apiError(res, 500, "Server error", err.message);
         client.release();
+    } finally {
+        client.release();
     }
 };
 
