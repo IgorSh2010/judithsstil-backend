@@ -250,11 +250,13 @@ export const createOrder = async (req, res) => {
       )
     );
 
+    const conversationName = `Rozmówka o zamówieniu #${orderId.toString().padStart(6, "0")}`;
+
     // 3. Створюємо розмову між користувачем та адміном до цього замовлення
     await client.query(
       `INSERT INTO conversations (order_id, user_id, admin_id, status, unread_count, title)
        VALUES ($1, $2)`,
-      [orderId, userId, 7, "open", 0, "Rozmówka o zamówieniu #" + orderId] // [orderId.toString().padStart(6, "0")]
+      [orderId, userId, 7, "open", 0, conversationName] // [orderId.toString().padStart(6, "0")]
     );
 
     await Promise.all(insertItems);
