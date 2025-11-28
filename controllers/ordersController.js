@@ -3,9 +3,13 @@ export const getClientOrder = async (req, res) => {
     const client = req.dbClient;
     try {
         if (id !== "main") {
-            const orderQuery  = `SELECT o.*, os.label as status_label  FROM orders o
+            const orderQuery  = `SELECT o.*, 
+                                c.id as conversation_id,
+                                os.label as status_label  FROM orders o
                                 left join order_statuses os 
                                     on o.status_id = os.id 
+                                left JOIN conversations c 
+                                    ON c.order_id = o.id
                                 WHERE o.id = $1`;
 
             const orderResult = await client.query(orderQuery, [id]); 
@@ -18,8 +22,7 @@ export const getClientOrder = async (req, res) => {
 
             const itemsQuery = `
                                 SELECT 
-                                oi.id,
-                                c.id AS conversation_id,
+                                oi.id,                                
                                 p.id AS product_id,
                                 p.title,
                                 pi.image_url,
@@ -29,8 +32,7 @@ export const getClientOrder = async (req, res) => {
                                 (oi.quantity * oi.price) AS total_item
                                 FROM order_items oi
                                 left JOIN products p ON p.id = oi.product_id
-                                left JOIN product_images pi ON pi.product_id = oi.product_id
-                                left JOIN conversations c ON c.order_id = oi.order_id
+                                left JOIN product_images pi ON pi.product_id = oi.product_id                    
                                 WHERE oi.order_id = $1
                             `;
             const itemsResult = await client.query(itemsQuery, [id]);
