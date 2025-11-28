@@ -182,6 +182,7 @@ export const pollConversationUpdates = async (req, res) => {
     }
 
     try {
+        console.log("conversationId - ", conversationId);
         // Перевірка прав
         const convCheck = await client.query(
             `SELECT user_id FROM conversations WHERE order_id = $1`,
