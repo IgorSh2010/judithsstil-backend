@@ -19,6 +19,7 @@ export const getClientOrder = async (req, res) => {
             const itemsQuery = `
                                 SELECT 
                                 oi.id,
+                                c.id AS conversation_id,
                                 p.id AS product_id,
                                 p.title,
                                 pi.image_url,
@@ -29,6 +30,7 @@ export const getClientOrder = async (req, res) => {
                                 FROM order_items oi
                                 left JOIN products p ON p.id = oi.product_id
                                 left JOIN product_images pi ON pi.product_id = oi.product_id
+                                left JOIN conversations c ON c.order_id = oi.order_id
                                 WHERE oi.order_id = $1
                             `;
             const itemsResult = await client.query(itemsQuery, [id]);

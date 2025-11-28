@@ -62,7 +62,7 @@ export const fetchMessages = async (req, res) => {
         );
 
         if (convCheck.rowCount === 0) {
-            //client.release();
+            client.release();
             return apiError(res, 404, "Rozmowa nie istnieje", "NOT_FOUND");
         }
 
@@ -70,7 +70,7 @@ export const fetchMessages = async (req, res) => {
 
         // Якщо користувач не адмін і не учасник розмови → зась
         if (role !== "admin" && conversationOwnerId !== userId) {
-            //client.release();
+            client.release();
             return apiError(res, 403, "Nie masz uprawnień do tej rozmowy", "FORBIDDEN");
         }
 
@@ -190,6 +190,7 @@ export const pollConversationUpdates = async (req, res) => {
         );
 
         if (convCheck.rowCount === 0) {
+            client.release();
             return apiError(res, 404, "Rozmowa nie istnieje", "NOT_FOUND");
         }
 
@@ -199,6 +200,7 @@ export const pollConversationUpdates = async (req, res) => {
         const role = roleRes.rows[0]?.role;
 
         if (role !== "admin" && ownerId !== userId) {
+            client.release();
             return apiError(res, 403, "Nie masz uprawnień", "FORBIDDEN");
         }
 
@@ -248,7 +250,7 @@ export const pollConversationUpdates = async (req, res) => {
         apiError(res, 500, "Server error", err.message);
         client.release();
     } finally {
-        //client.release();
+        //client.release(); //Тут нічого не робимо, бо відвалюється сам клієнт і не очікується відповідь
     }
 };
 
