@@ -185,7 +185,7 @@ export const pollConversationUpdates = async (req, res) => {
         console.log("conversationId - ", conversationId);
         // Перевірка прав
         const convCheck = await client.query(
-            `SELECT user_id FROM conversations WHERE order_id = $1`,
+            `SELECT user_id FROM conversations WHERE id = $1`,
             [conversationId]
         );
 
@@ -248,7 +248,7 @@ export const pollConversationUpdates = async (req, res) => {
         apiError(res, 500, "Server error", err.message);
         client.release();
     } finally {
-        client.release();
+        //client.release();
     }
 };
 
