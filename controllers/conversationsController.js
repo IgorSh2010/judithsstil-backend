@@ -79,6 +79,7 @@ export const fetchMessages = async (req, res) => {
             `SELECT 
                 m.id, 
                 conversation_id,
+                order_id,
                 CASE
 			        WHEN sender_id = $2 THEN 'me'
 			        ELSE COALESCE(u.username, 'unknown') || ' (' || u.email || ')'
@@ -88,6 +89,7 @@ export const fetchMessages = async (req, res) => {
                 m.created_at                
             FROM judithsstil.messages m
             left join users u on u.id = sender_id
+            left join conversations c on c.id = conversation_id
             WHERE conversation_id = $1
             ORDER BY m.created_at ASC;`,
             [conversationId, userId]
