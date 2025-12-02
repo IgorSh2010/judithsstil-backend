@@ -32,7 +32,13 @@ export const getClientOrder = async (req, res) => {
                                 (oi.quantity * oi.price) AS total_item
                                 FROM order_items oi
                                 left JOIN products p ON p.id = oi.product_id
-                                left JOIN product_images pi ON pi.product_id = oi.product_id                    
+                                LEFT JOIN LATERAL (
+                                                    SELECT image_url
+                                                    FROM product_images
+                                                    WHERE product_id = p.id
+                                                    ORDER BY id ASC
+                                                    LIMIT 1
+                                                  ) img ON true                    
                                 WHERE oi.order_id = $1
                             `;
             const itemsResult = await client.query(itemsQuery, [id]);
@@ -45,10 +51,14 @@ export const getClientOrder = async (req, res) => {
             });
 
         } else {
-            const result = await client.query(`SELECT o.*, os.label as status_label  FROM orders o
+            const result = await client.query(`SELECT 
+                                                o.*, 
+                                                os.label as status_label  
+                                                FROM orders o
                                                 left join order_statuses os 
                                                     on o.status_id = os.id 
-                                                WHERE user_id = $1 ORDER BY o.created_at DESC`, [req.user.id]);
+                                                WHERE user_id = $1 
+                                                ORDER BY o.created_at DESC`, [req.user.id]);
             res.json(result.rows);
         }
     } catch (error) {
