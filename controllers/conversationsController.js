@@ -18,7 +18,7 @@ export const getConversations = async (req, res) => {
             WHERE user_id = $1 OR admin_id = $1;`, [userId]
         );
 
-        const conversations = conversationsResult.rows[0];
+        const conversations = conversationsResult.rows[0] || { rows: [] };
 
         // Якщо таких розмов нема → зась
         if ( conversations.rows.length === 0 ) {
