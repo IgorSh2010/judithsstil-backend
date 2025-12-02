@@ -25,7 +25,7 @@ export const getClientOrder = async (req, res) => {
                                 oi.id,                                
                                 p.id AS product_id,
                                 p.title,
-                                pi.image_url,
+                                img.image_url,
                                 p.price AS product_price,
                                 oi.quantity,
                                 oi.price AS item_price,
