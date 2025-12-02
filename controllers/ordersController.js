@@ -255,7 +255,7 @@ export const createOrder = async (req, res) => {
     // 3. Створюємо розмову між користувачем та адміном до цього замовлення
     await client.query(
       `INSERT INTO conversations (order_id, user_id, admin_id, status, unread_count, title)
-       VALUES ($1, $2)`,
+       VALUES ($1, $2, $3, $4, $5, $6)`,
       [orderId, userId, 7, "open", 0, conversationName] // [orderId.toString().padStart(6, "0")]
     );
 
