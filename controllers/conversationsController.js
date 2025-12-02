@@ -21,9 +21,9 @@ export const getConversations = async (req, res) => {
         const conversations = conversationsResult.rows[0] || { rows: [] };
 
         // Якщо таких розмов нема → зась
-        if ( conversations.rows.length === 0 ) {
+        if ( conversations.rowCount === 0 ) {
             client.release();
-            return apiError(res, 404, "Jeszcze nie ma żadnych rozmów", "NOT_FOUND");
+            return apiError(res, 403, "Jeszcze nie masz żadnych rozmów", "FORBIDDEN");
         }       
 
         res.json(conversationsResult.rows);
