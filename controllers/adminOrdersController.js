@@ -39,14 +39,20 @@ export const getOrders = async (req, res) => {
                             oi.id,
                             p.id AS product_id,
                             p.title,
-                            pi.image_url,
+                            img.image_url,
                             p.price AS product_price,
                             oi.quantity,
                             oi.price AS item_price,
                             (oi.quantity * oi.price) AS total_item
                             FROM order_items oi
                             left JOIN products p ON p.id = oi.product_id
-                            left JOIN product_images pi ON pi.product_id = oi.product_id
+                            LEFT JOIN LATERAL (
+                                                SELECT image_url
+                                                FROM product_images
+                                                WHERE product_id = p.id
+                                                ORDER BY id ASC
+                                                LIMIT 1
+                                              ) img ON true
                             WHERE oi.order_id = $1
                             `;
             const itemsResult = await client.query(itemsQuery, [id]);
