@@ -13,9 +13,12 @@ export const getConversations = async (req, res) => {
         // Тягнемо всі розмови, які має користувач, або які має адмін
         const conversationsResult = await client.query(
             `SELECT 
-                id, order_id, updated_at, unread_count, title
+                id, order_id, updated_at, unread_count, title,
+                (SELECT content FROM judithsstil.messages m WHERE m.conversation_id=c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message,
+                (SELECT created_at FROM judithsstil.messages m WHERE m.conversation_id=c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message_at
             FROM conversations
-            WHERE user_id = $1 OR admin_id = $1;`, [userId]
+            WHERE user_id = $1 OR admin_id = $1
+            ORDER BY last_message_at DESC NULLS LAST, c.updated_at DESC;`, [userId]
         );
 
         const conversations = conversationsResult.rows[0] || { rows: [] };
@@ -255,4 +258,47 @@ export const pollConversationUpdates = async (req, res) => {
         //client.release(); //Тут нічого не робимо, бо відвалюється сам клієнт і не очікується відповідь
     }
 };
+
+// POST /api/conversations/:id/mark-read
+export const markConversationRead = async (req, res) => {
+  const { id: conversationId } = req.params;
+  const client = req.dbClient;
+  const userId = req.user?.id;
+  if (!userId) {
+    client.release();
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    await client.query("BEGIN");
+
+    // 1) Помітити як прочитані повідомлення, які НЕ від поточного користувача
+    await client.query(
+      `UPDATE messages
+       SET is_read = true
+       WHERE conversation_id = $1
+         AND sender_id <> $2
+         AND is_read = false`,
+      [conversationId, userId]
+    );
+
+    // 2) Обнулити лічильник unread_count в conversations
+    await client.query(
+      `UPDATE judithsstil.conversations
+       SET unread_count = 0, updated_at = now()
+       WHERE id = $1`,
+      [conversationId]
+    );
+
+    await client.query("COMMIT");
+    res.json({ success: true });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Mark read error:", err);
+    res.status(500).json({ message: "Server error" });
+  } finally {
+    client.release();
+  }
+};
+
 

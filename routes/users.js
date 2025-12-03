@@ -5,7 +5,7 @@ import { uploadImage, getImage } from "../controllers/settingsController.js";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { tenantResolver } from "../middleware/tenantResolver.js";
 import { getClientOrder, getClientCart, addToCart, clearCart, removeCartItem, createOrder } from "../controllers/ordersController.js";
-import { fetchMessages, sendMessageToConversation, pollConversationUpdates, getConversations } from "../controllers/conversationsController.js";
+import { fetchMessages, sendMessageToConversation, pollConversationUpdates, getConversations, markConversationRead } from "../controllers/conversationsController.js";
 
 const router = express.Router();
 const upload = multer({ dest: "tmp/" }); // тимчасова папка
@@ -22,6 +22,7 @@ router.post("/upload-image", tenantResolver, authenticateToken, upload.single("i
 router.post("/cart", tenantResolver, authenticateToken, addToCart);
 router.post("/create-order", tenantResolver, authenticateToken, createOrder);
 router.post("/send-message/:id", tenantResolver, authenticateToken, sendMessageToConversation);
+router.post("/conversations/:id/mark-read", tenantResolver, authenticateToken, markConversationRead);
 
 router.delete("/clearCart", tenantResolver, authenticateToken, clearCart);
 router.delete("/remove-from-cart/:productID", tenantResolver, authenticateToken, removeCartItem);
