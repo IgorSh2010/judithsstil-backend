@@ -16,9 +16,9 @@ export const getConversations = async (req, res) => {
                 id, order_id, updated_at, unread_count, title,
                 (SELECT content FROM judithsstil.messages m WHERE m.conversation_id=c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message,
                 (SELECT created_at FROM judithsstil.messages m WHERE m.conversation_id=c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message_at
-            FROM conversations
+            FROM conversations c
             WHERE user_id = $1 OR admin_id = $1
-            ORDER BY last_message_at DESC NULLS LAST, updated_at DESC;`, [userId]
+            ORDER BY last_message_at DESC NULLS LAST, c.updated_at DESC;`, [userId]
         );
 
         const conversations = conversationsResult.rows[0] || { rows: [] };
