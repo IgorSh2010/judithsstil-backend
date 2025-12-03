@@ -152,14 +152,14 @@ export const updateOrderPayment = async (req, res) => {
 
     const orderRes = await client.query(
       `SELECT * FROM orders  
-       WHERE id = $1`,
+       WHERE id = $1 AND status_id not in (1, 2, 7)`, // 1 - nowe, 2 - przyjęte, 7 - anulowane
       [id]
     );
 
     const order = orderRes.rows[0];
 
     if (!order) {
-      throw new Error("Order not found");
+      throw new Error("Order not found or invalid status for payment");
     }
 
     const paymentRes = await client.query(
