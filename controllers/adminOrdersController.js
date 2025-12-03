@@ -159,8 +159,7 @@ export const updateOrderPayment = async (req, res) => {
     const order = orderRes.rows[0];
 
     if (!order) {
-      //throw new Error("Order not found or invalid status for payment");
-      res.status(400).json({ message: "Zamowienie nie istnieje lub nie można edytować płatności ze stanów: nowe, przyjęte, anulowane" });
+      return res.status(400).json({ message: "Zamowienie nie istnieje lub nie można edytować płatności ze stanów: nowe, przyjęte, anulowane" });
     }
 
     const paymentRes = await client.query(
