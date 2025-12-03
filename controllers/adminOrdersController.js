@@ -13,6 +13,7 @@ export const getOrders = async (req, res) => {
                 u.adress, 
                 o.total_price, 
                 o.status_id,
+                c.id as conversation_id,
                 p.method as payment_method, 
                 p.status as payment_status,
                 p.external_id as payment_external_id,
@@ -22,6 +23,7 @@ export const getOrders = async (req, res) => {
                 o.description
               FROM orders o
               LEFT JOIN public.users u ON o.user_id = u.id
+              LEFT JOIN conversations c ON o.id = c.order_id
               LEFT JOIN payments p ON o.payment_id = p.id
               WHERE o.id = $1
               ORDER BY o.updated_at desc
@@ -45,7 +47,7 @@ export const getOrders = async (req, res) => {
                             oi.price AS item_price,
                             (oi.quantity * oi.price) AS total_item
                             FROM order_items oi
-                            left JOIN products p ON p.id = oi.product_id
+                            left JOIN products p ON p.id = oi.product_id                            
                             LEFT JOIN LATERAL (
                                                 SELECT image_url
                                                 FROM product_images
