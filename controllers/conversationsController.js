@@ -18,7 +18,7 @@ export const getConversations = async (req, res) => {
                 (SELECT created_at FROM judithsstil.messages m WHERE m.conversation_id=c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message_at
             FROM conversations
             WHERE user_id = $1 OR admin_id = $1
-            ORDER BY last_message_at DESC NULLS LAST, c.updated_at DESC;`, [userId]
+            ORDER BY last_message_at DESC NULLS LAST, updated_at DESC;`, [userId]
         );
 
         const conversations = conversationsResult.rows[0] || { rows: [] };
@@ -259,7 +259,6 @@ export const pollConversationUpdates = async (req, res) => {
     }
 };
 
-// POST /api/conversations/:id/mark-read
 export const markConversationRead = async (req, res) => {
   const { id: conversationId } = req.params;
   const client = req.dbClient;
@@ -284,7 +283,7 @@ export const markConversationRead = async (req, res) => {
 
     // 2) Обнулити лічильник unread_count в conversations
     await client.query(
-      `UPDATE judithsstil.conversations
+      `UPDATE conversations
        SET unread_count = 0, updated_at = now()
        WHERE id = $1`,
       [conversationId]
