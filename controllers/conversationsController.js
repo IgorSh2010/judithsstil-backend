@@ -119,6 +119,7 @@ export const sendMessageToConversation = async (req, res) => {
     }
 
     try {
+        await client.query("BEGIN");
         //0) Перевіряємо, роль користувача
         const userResult = await client.query(
             `SELECT role FROM public.users WHERE id = $1`,
@@ -164,12 +165,15 @@ export const sendMessageToConversation = async (req, res) => {
             [conversationId]
         );
 
+        await client.query("COMMIT");
         res.json({ messageId });
         
     } catch (err) {
+        await client.query("ROLLBACK");
         console.error("❌ Помилка при відправленні повідомлення:", err);
         apiError(res, 500, "Server error", err.message);
     } finally {
+        await client.query("END");
         client.release();
     }
 };
