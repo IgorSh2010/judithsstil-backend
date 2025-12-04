@@ -82,7 +82,7 @@ export const getMe = async (req, res) => {
 };
 
 export const getStats = async (req, res) => {
-  const client = await getClientPool();
+  const client = req.dbClient;
   const user_id = req.user?.id;
 
   try {
