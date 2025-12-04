@@ -1,4 +1,4 @@
-import { generateInvoice } from "../middleware/PDFGenerator.js";
+import PDFDocument from "pdfkit";
 
 export const getOrders = async (req, res) => {
   const { id } = req.params;
