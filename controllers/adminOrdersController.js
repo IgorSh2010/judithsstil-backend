@@ -239,11 +239,25 @@ export const updateOrderPayment = async (req, res) => {
 export const getPDFInvoice = async (req, res) => {
   const client = req.dbClient;
   const { orderId } = req.params;
-  console.log(orderId);  
+    
   try {
-    const order = await client.query("SELECT * FROM orders WHERE id = $1", [orderId]);
-    const orderItems = await client.query("SELECT * FROM order_items WHERE order_id = $1", [orderId]);
+    const orderObject = await client.query(`SELECT o.*, 
+                                                  u.username AS customer_name,
+                                                  u.email AS customer_email,
+                                                  u.phone AS customer_phone
+                                                  u.adress AS customer_adress 
+                                            FROM orders o
+                                            LEFT JOIN users u ON o.user_id = u.users.id
+                                            WHERE id = $1`, [orderId]);
+    const orderItems = await client.query(`SELECT oi.*, 
+                                                  p.title AS name, 
+                                                  p.price AS price,
+                                                  1 AS qty 
+                                           FROM order_items oi 
+                                           LEFT JOIN products p ON oi.product_id = p.id
+                                           WHERE order_id = $1`, [orderId]);
 
+    const order = orderObject.rows[0];
     const invoiceNumber = "FV/" + order.id + "/" + new Date().getFullYear();
 
       const doc = new PDFDocument({ size: "A4", margin: 40 });
