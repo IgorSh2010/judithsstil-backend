@@ -1,3 +1,5 @@
+import { generateInvoice } from "../middleware/PDFGenerator.js";
+
 export const getOrders = async (req, res) => {
   const { id } = req.params;
   const client = req.dbClient;
@@ -232,4 +234,22 @@ export const updateOrderPayment = async (req, res) => {
   } finally {
     client.release();
   }
+};
+
+export const getPDFInvoice = async (req, res) => {
+  const client = req.dbClient;
+  const { orderId } = req.params;
+    
+  try {
+    const pdf = await generateInvoice(orderId);
+
+    res.set("Content-Type", "application/pdf");
+    res.send(pdf);
+  } catch (error) {
+    console.error("Błąd podczas generowania PDF:", error);
+    res.status(500).json({ message: "Błąd serwera podczas generowania PDF." });
+  } finally {
+    client.release();
+  }
+
 };
