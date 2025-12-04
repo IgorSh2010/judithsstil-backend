@@ -239,12 +239,8 @@ export const updateOrderPayment = async (req, res) => {
 export const getPDFInvoice = async (req, res) => {
   const client = req.dbClient;
   const { orderId } = req.params;
-    
+  console.log(orderId);  
   try {
-    /* const pdf = await generateInvoice(orderId);
-    
-    res.set("Content-Type", "application/pdf");
-    res.send(pdf); */
     const order = await client.query("SELECT * FROM orders WHERE id = $1", [orderId]);
     const orderItems = await client.query("SELECT * FROM order_items WHERE order_id = $1", [orderId]);
 
