@@ -81,4 +81,38 @@ export const getMe = async (req, res) => {
   }
 };
 
+export const getStats = async (req, res) => {
+  const client = await getClientPool();
+  const user_id = req.user?.id;
+
+  try {
+    let newOrders = 0;
+
+    const userResult = await client.query(
+            `SELECT role FROM public.users WHERE id = $1`,
+            [user_id]
+        );
+    const role = userResult.rows[0]?.role;
+
+    if (role === "admin") {
+       newOrders = (await client.query("SELECT COUNT(*) as order_count FROM orders WHERE status_id = 1")).rows[0].order_count; 
+    }
+    
+    const newMessages = await client.query("SELECT COUNT(*) as message_count FROM messages WHERE sender_id != $1 and not is_read", [user_id]);
+
+    const result = [{
+      newOrders: newOrders || 0,
+      newMessages: newMessages.rows[0].message_count || 0
+    }];
+
+    res.json( result );
+
+  } catch (err) {
+    console.error("❌ Помилка при отриманні статистики користувачів:", err);
+    res.status(500).json({ message: "Помилка сервера", error: err.message });
+  } finally {
+    client.release();
+  }
+}
+
 

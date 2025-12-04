@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { userUpdate, getMe } from "../controllers/userController.js";
+import { userUpdate, getMe, getStats } from "../controllers/userController.js";
 import { uploadImage, getImage } from "../controllers/settingsController.js";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { tenantResolver } from "../middleware/tenantResolver.js";
@@ -16,6 +16,7 @@ router.get("/client-order/:id", tenantResolver, authenticateToken, getClientOrde
 router.get("/conversations", tenantResolver, authenticateToken, getConversations);
 router.get("/messages/:id", tenantResolver, authenticateToken, fetchMessages);
 router.get("/messages/:id/poll", tenantResolver, authenticateToken, pollConversationUpdates);
+router.get("/stats", tenantResolver, authenticateToken, getStats);
 
 router.post("/update", authenticateToken, userUpdate); // 
 router.post("/upload-image", tenantResolver, authenticateToken, upload.single("image"), uploadImage);
