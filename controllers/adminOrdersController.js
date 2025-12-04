@@ -298,7 +298,7 @@ export const getPDFInvoice = async (req, res) => {
       let totalVat = 0;
       let totalBrutto = 0;
 
-      for (const item of orderItems) {
+      for (const item of orderItems.rows) {
         const net = item.price * item.qty;
         const vatRate = 0.23; // припускаємо 23%
         const vat = net * vatRate;
