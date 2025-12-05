@@ -94,7 +94,7 @@ export const getClientCart = async (req, res) => {
         client.release();
         res.status(500).json({ message: "Błąd serwera podczas pobierania koszyka." });
     } finally {
-        client.release(); // <-- обов’язково!
+        //client.release(); // <-- обов’язково!
     }
 }
 
