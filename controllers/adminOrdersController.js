@@ -1,6 +1,5 @@
 import PDFDocument from "pdfkit";
 import path from "path";
-import { document } from "pdfkit/js/page";
 
 export const getOrders = async (req, res) => {
   const { id } = req.params;
