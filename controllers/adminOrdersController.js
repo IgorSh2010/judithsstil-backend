@@ -1,5 +1,6 @@
 import PDFDocument from "pdfkit";
 import path from "path";
+import { document } from "pdfkit/js/page";
 
 export const getOrders = async (req, res) => {
   const { id } = req.params;
@@ -273,6 +274,7 @@ export const getPDFInvoice = async (req, res) => {
     // Load TTF font that supports PL letters
     doc.registerFont("Regular", path.join("fonts", "OpenSans-Regular.ttf"));
     doc.registerFont("Bold", path.join("fonts", "OpenSans-Bold.ttf"));
+    doc.registerFont("Italic", path.join("fonts", "OpenSans-Italic.ttf"));
     doc.font("Regular");
 
     res.setHeader("Content-disposition", `attachment; filename="${invoiceNumber}.pdf"`);
