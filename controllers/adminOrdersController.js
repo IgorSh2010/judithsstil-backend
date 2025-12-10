@@ -248,7 +248,7 @@ export const getPDFInvoice = async (req, res) => {
              u.email AS customer_email,
              u.phone AS customer_phone,
              u.adress AS customer_address,
-             u.nip AS customer_nip
+             '12-123-1239-25' AS customer_nip
         FROM orders o
    LEFT JOIN users u ON o.user_id = u.id
        WHERE o.id = $1
