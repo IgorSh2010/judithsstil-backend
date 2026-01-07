@@ -306,6 +306,10 @@ export const getFavorites = async (req, res) => {
       ...p,
       images: typeof p.images === "string" ? JSON.parse(p.images) : p.images
     }));
+    
+    console.log(query);
+    console.log(products);
+
     res.json(products);
   } catch (err) {
     console.error("❌ Błąd pobierania produktów:", err);
