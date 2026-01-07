@@ -284,3 +284,32 @@ export const updateProduct = async (req, res) => {
     }
 };
 
+export const getFavorites = async (req, res) => {
+  const client = req.dbClient;
+  const user_id = req.user?.id;
+
+  try {
+    const query = `
+      SELECT p.id, p.title, p.description, p.price, p.is_available, p.is_bestseller, p.is_featured,
+        COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
+      FROM favorites f
+      JOIN products p ON f.product_id = p.id
+      LEFT JOIN product_images pi ON p.id = pi.product_id
+      WHERE f.user_id = $1
+      GROUP BY p.id
+      ORDER BY p.created_at DESC;
+    `;
+    const result = await client.query(query, [user_id]);
+    const products = result.rows.map((p) => ({
+      ...p,
+      images: typeof p.images === "string" ? JSON.parse(p.images) : p.images
+    }));
+    res.json(products);
+  } catch (err) {
+    console.error("❌ Błąd pobierania produktów:", err);
+    res.status(500).json({ message: "Błąd serwera" });
+  } finally {
+    client.release(); // <-- обов’язково!
+  }
+};
+

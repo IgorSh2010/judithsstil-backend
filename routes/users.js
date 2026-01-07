@@ -28,7 +28,6 @@ router.post("/conversations/:id/mark-read", tenantResolver, authenticateToken, m
 router.delete("/clearCart", tenantResolver, authenticateToken, clearCart);
 router.delete("/remove-from-cart/:productID", tenantResolver, authenticateToken, removeCartItem);
 
-
 // 🧑‍💻 Отримати поточного користувача
 router.get("/me", authenticateToken, getMe);
 
