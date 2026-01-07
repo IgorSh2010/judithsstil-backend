@@ -334,8 +334,8 @@ export const getFavorites = async (req, res) => {
       images: Array.isArray(p.images) ? p.images : JSON.parse(p.images)
     }));
 
-    Console.log(query);
-    Console.log(products);
+    console.log(query);
+    console.log(products);
     res.json(products);
   } catch (err) {
     console.error("❌ Błąd pobierania ulubionych:", err);
