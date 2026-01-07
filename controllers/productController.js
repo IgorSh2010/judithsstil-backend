@@ -98,6 +98,7 @@ export const createProduct = async (req, res) => {
 export const getProducts = async (req, res) => {
   const client = req.dbClient;  
   try {
+
     const query = `
       SELECT p.id, p.title, p.description, p.price, p.is_available, p.is_bestseller, p.is_featured,
         COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
@@ -287,6 +288,7 @@ export const updateProduct = async (req, res) => {
 export const getFavorites = async (req, res) => {
   const client = req.dbClient;
   const user_id = req.user?.id;
+  const { id } = req.params;
 
   try {
     const query = `
@@ -295,11 +297,11 @@ export const getFavorites = async (req, res) => {
       FROM favorites f
       JOIN products p ON f.product_id = p.id
       LEFT JOIN product_images pi ON p.id = pi.product_id
-      WHERE f.user_id = $1
+      WHERE f.user_id = $1 ${id!="all" ? "AND f.product_id = $2" : ""}
       GROUP BY p.id
       ORDER BY p.created_at DESC;
     `;
-    const result = await client.query(query, [user_id]);
+    const result = await client.query(query, [user_id, id]);
     const products = result.rows.map((p) => ({
       ...p,
       images: typeof p.images === "string" ? JSON.parse(p.images) : p.images
