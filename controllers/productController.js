@@ -29,46 +29,50 @@ export const configs = {
 export const getStatsDashboard = async (req, res) => {
   const client = req.dbClient;
   try {
+    // Використовуємо $1 замість ${} для безпеки
     const query = `
       SELECT 
-        COUNT(*) AS total_products,
-        SUM(CASE WHEN is_available THEN 1 ELSE 0 END) AS available_products,
-        SUM(CASE WHEN is_bestseller THEN 1 ELSE 0 END) AS bestseller_products,
-        SUM(CASE WHEN is_featured THEN 1 ELSE 0 END) AS featured_products
-      FROM products
-      Union All
-      SELECT 
-        COUNT(*) AS total_orders,
-        SUM (CASE WHEN status_id = 6 THEN total ELSE 0 END) AS monthlyRevenue, // 6 - Complited
-        SUM(CASE WHEN status_id = 'delivered' THEN 1 ELSE 0 END) AS delivered_orders,
-        SUM(CASE WHEN status_id = 'pending' THEN 1 ELSE 0 END) AS pending_orders,
-        SUM(CASE WHEN status_id = 'canceled' THEN 1 ELSE 0 END) AS canceled_orders
-      FROM orders o
-      WHERE created_at > date_trunc('month', current_date) 
-          AND created_at < now()
-      Union All
-      SELECT 
-        COUNT(*) AS total_users,
-        SUM(CASE WHEN is_active THEN 1 ELSE 0 END) AS active_users,
-        SUM(CASE WHEN is_admin THEN 1 ELSE 0 END) AS admin_users
-      FROM users where tenant = '${req.tenantId}'
-      union all
-      SELECT 
-        COUNT(*) AS total_messages,
-        SUM(CASE WHEN is_read THEN 1 ELSE 0 END) AS read_messages,
-        SUM(CASE WHEN not is_read THEN 1 ELSE 0 END) AS unread_messages
-      FROM messages;
+        -- Блок Продуктів
+        (SELECT COUNT(*) FROM products) AS total_products,
+        (SELECT COUNT(*) FROM products WHERE is_available) AS available_products,
+        (SELECT COUNT(*) FROM products WHERE is_bestseller) AS bestseller_products,
+        (SELECT COUNT(*) FROM products WHERE is_featured) AS featured_products,
+        
+        -- Блок Замовлень (за поточний місяць 2026)
+        (SELECT COUNT(*) FROM orders 
+         WHERE created_at >= date_trunc('month', now()) 
+         AND created_at <= now()) AS total_orders,
+         
+        (SELECT COALESCE(SUM(total), 0) FROM orders 
+         WHERE status_id = 6 
+         AND created_at >= date_trunc('month', now())) AS monthly_revenue,
+         
+        (SELECT COUNT(*) FROM orders 
+         WHERE status_id = 7 
+         AND created_at >= date_trunc('month', now())) AS delivered_orders,
+
+        -- Блок Користувачів (безпечно через параметр $1)
+        (SELECT COUNT(*) FROM users WHERE tenant = $1) AS total_users,
+        (SELECT COUNT(*) FROM users WHERE tenant = $1 AND is_active) AS active_users,
+
+        -- Блок Повідомлень
+        (SELECT COUNT(*) FROM messages) AS total_messages,
+        (SELECT COUNT(*) FROM messages WHERE NOT is_read) AS unread_messages;
     `;
 
-    const result = await client.query(query);
-    const stats = result.rows[0];
-    res.json(stats);
+    // Передаємо значення окремим масивом
+    const result = await client.query(query, [req.tenantId]);
+    
+    res.json(result.rows[0]);
 
   } catch (err) {
     console.error("❌ Помилка при отриманні статистики:", err);
     res.status(500).json({ message: "Помилка сервера", error: err.message });
   } finally {
-    client.release();
+    // Важливо: release() викликається тільки якщо client взято з pool.connect()
+    if (client && typeof client.release === 'function') {
+      client.release();
+    }
   }  
 };
 
