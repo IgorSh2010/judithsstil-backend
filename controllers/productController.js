@@ -43,7 +43,7 @@ export const getStatsDashboard = async (req, res) => {
          WHERE created_at >= date_trunc('month', now()) 
          AND created_at <= now()) AS total_orders,
          
-        (SELECT COALESCE(SUM(total), 0) FROM orders 
+        (SELECT COALESCE(SUM(total_price), 0) FROM orders 
          WHERE status_id = 6 
          AND created_at >= date_trunc('month', now())) AS monthly_revenue,
          
