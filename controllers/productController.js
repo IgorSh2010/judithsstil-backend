@@ -53,11 +53,12 @@ export const getStatsDashboard = async (req, res) => {
 
         -- Блок Користувачів (безпечно через параметр $1)
         (SELECT COUNT(*) FROM users WHERE tenant = $1) AS total_users,
-        (SELECT COUNT(*) FROM users WHERE tenant = $1 AND is_active) AS active_users,
+        (SELECT COUNT(*) FROM users WHERE tenant = $1 AND is_active) AS active_users--,
 
         -- Блок Повідомлень
-        --(SELECT COUNT(*) FROM messages) AS total_messages--,
-        --(SELECT COUNT(*) FROM messages WHERE NOT is_read) AS unread_messages;
+        --(SELECT COUNT(*) FROM messages) AS total_messages,
+        --(SELECT COUNT(*) FROM messages WHERE NOT is_read) AS unread_messages
+        ;
     `;
 
     // Передаємо значення окремим масивом
