@@ -3,12 +3,6 @@ import { getClientPool } from "../middleware/ClientPool.js";
 
 dotenv.config();
 
-export const getTenantHost = (req) => {
-  const host = req.get('origin') || req.get('host');
- 
-  return host;
-};
-
 export const getLogo = async (req, res) => {
   const client = await getClientPool();
   //В цій змінній зберігається домен орігін запиту по якому можна визначити тенанта
@@ -78,15 +72,15 @@ export const getCategories = async (req, res) => {
 
 export const getProducts = async (req, res) => {
   const client = await getClientPool();
-  const tenantHost = getTenantHost(req);
-  console.log("Fetching products for tenant:", tenantHost);
-  
+
   try {
     const { id } = req.params;
-    const { category = "all", page = 1, limit = 18 } = req.query; // ✅ додаємо query параметр і пагінацію за замовчуванням
+    const { category = "all", page = 1, limit = 18, tenant } = req.query; // ✅ додаємо query параметр і пагінацію за замовчуванням
     const offset = (page - 1) * limit;
-
     let products;
+
+    await client.query(`SET search_path TO ${tenant}, public`);
+    
 
     // --- 🔹 Якщо запит з ID — повертаємо конкретний продукт
     if (id) {
@@ -106,9 +100,9 @@ export const getProducts = async (req, res) => {
             json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), 
             '[]'
           ) AS images
-        FROM judithsstil.products p
-        LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
-        LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
+        FROM products p
+        LEFT JOIN product_images pi ON p.id = pi.product_id
+        LEFT JOIN product_categories pc ON p.category_id = pc.id
         WHERE p.id = $1
         GROUP BY p.id, pc.name, pc.slug
         ORDER BY p.created_at DESC;
@@ -149,9 +143,9 @@ export const getProducts = async (req, res) => {
             json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), 
             '[]'
           ) AS images
-        FROM judithsstil.products p
-        LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
-        LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
+        FROM products p
+        LEFT JOIN product_images pi ON p.id = pi.product_id
+        LEFT JOIN product_categories pc ON p.category_id = pc.id
         WHERE pc.slug = $1
         GROUP BY p.id, pc.name, pc.slug
         ORDER BY p.created_at DESC
@@ -176,9 +170,9 @@ export const getProducts = async (req, res) => {
             json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), 
             '[]'
           ) AS images
-        FROM judithsstil.products p
-        LEFT JOIN judithsstil.product_images pi ON p.id = pi.product_id
-        LEFT JOIN judithsstil.product_categories pc ON p.category_id = pc.id
+        FROM products p
+        LEFT JOIN product_images pi ON p.id = pi.product_id
+        LEFT JOIN product_categories pc ON p.category_id = pc.id
         GROUP BY p.id, pc.name, pc.slug
         ORDER BY p.created_at DESC
         LIMIT $1 OFFSET $2;
@@ -186,7 +180,7 @@ export const getProducts = async (req, res) => {
       values = [limit, offset];
     }
 
-    const total = await client.query( `SELECT count(*) FROM judithsstil.products p` );
+    const total = await client.query( `SELECT count(*) FROM products p` );
 
     const result = await client.query(query, values);
     products = result.rows.map((p) => ({
