@@ -3,6 +3,12 @@ import { getClientPool } from "../middleware/ClientPool.js";
 
 dotenv.config();
 
+export const getTenantHost = (req) => {
+  const host = req.get('origin') || req.get('host');
+ 
+  return host;
+};
+
 export const getLogo = async (req, res) => {
   const client = await getClientPool();
   //В цій змінній зберігається домен орігін запиту по якому можна визначити тенанта
@@ -72,6 +78,9 @@ export const getCategories = async (req, res) => {
 
 export const getProducts = async (req, res) => {
   const client = await getClientPool();
+  const tenantHost = getTenantHost(req);
+  console.log("Fetching products for tenant:", tenantHost);
+  
   try {
     const { id } = req.params;
     const { category = "all", page = 1, limit = 18 } = req.query; // ✅ додаємо query параметр і пагінацію за замовчуванням
