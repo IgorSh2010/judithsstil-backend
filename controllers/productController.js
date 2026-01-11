@@ -32,7 +32,7 @@ export const createProduct = async (req, res) => {
   let categoryId = null;
   const currenConf = configs[req.tenant];
   const files = req.files;
-  const uploaded = [];
+  let uploaded = [];
 
   cloudinary.config(currenConf);
 
