@@ -56,8 +56,8 @@ export const getStatsDashboard = async (req, res) => {
         (SELECT COUNT(*) FROM users WHERE tenant = $1 AND is_active) AS active_users,
 
         -- Блок Повідомлень
-        (SELECT COUNT(*) FROM messages) AS total_messages,
-        (SELECT COUNT(*) FROM messages WHERE NOT is_read) AS unread_messages;
+        --(SELECT COUNT(*) FROM messages) AS total_messages,
+        --(SELECT COUNT(*) FROM messages WHERE NOT is_read) AS unread_messages;
     `;
 
     // Передаємо значення окремим масивом
