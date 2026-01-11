@@ -26,6 +26,52 @@ export const configs = {
   }
 };
 
+export const getStatsDashboard = async (req, res) => {
+  const client = req.dbClient;
+  try {
+    const query = `
+      SELECT 
+        COUNT(*) AS total_products,
+        SUM(CASE WHEN is_available THEN 1 ELSE 0 END) AS available_products,
+        SUM(CASE WHEN is_bestseller THEN 1 ELSE 0 END) AS bestseller_products,
+        SUM(CASE WHEN is_featured THEN 1 ELSE 0 END) AS featured_products
+      FROM products
+      Union All
+      SELECT 
+        COUNT(*) AS total_orders,
+        SUM (CASE WHEN status_id = 6 THEN total ELSE 0 END) AS monthlyRevenue, // 6 - Complited
+        SUM(CASE WHEN status_id = 'delivered' THEN 1 ELSE 0 END) AS delivered_orders,
+        SUM(CASE WHEN status_id = 'pending' THEN 1 ELSE 0 END) AS pending_orders,
+        SUM(CASE WHEN status_id = 'canceled' THEN 1 ELSE 0 END) AS canceled_orders
+      FROM orders o
+      WHERE created_at > date_trunc('month', current_date) 
+          AND created_at < now()
+      Union All
+      SELECT 
+        COUNT(*) AS total_users,
+        SUM(CASE WHEN is_active THEN 1 ELSE 0 END) AS active_users,
+        SUM(CASE WHEN is_admin THEN 1 ELSE 0 END) AS admin_users
+      FROM users where tenant = '${req.tenantId}'
+      union all
+      SELECT 
+        COUNT(*) AS total_messages,
+        SUM(CASE WHEN is_read THEN 1 ELSE 0 END) AS read_messages,
+        SUM(CASE WHEN not is_read THEN 1 ELSE 0 END) AS unread_messages
+      FROM messages;
+    `;
+
+    const result = await client.query(query);
+    const stats = result.rows[0];
+    res.json(stats);
+
+  } catch (err) {
+    console.error("❌ Помилка при отриманні статистики:", err);
+    res.status(500).json({ message: "Помилка сервера", error: err.message });
+  } finally {
+    client.release();
+  }  
+};
+
 export const createProduct = async (req, res) => {
   const client = req.dbClient;
   let { name, description, price, category, sizes, featured, bestseller} = req.body;
