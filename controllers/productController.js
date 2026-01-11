@@ -35,7 +35,7 @@ export const createProduct = async (req, res) => {
   let uploaded = [];
 
   cloudinary.config(currenConf);
-
+  console.log("req.tenant - ", req.tenant);
   if (!name || !price) {
     return res.status(400).json({ message: "Brak wymaganych danych." });
   }
@@ -56,11 +56,11 @@ export const createProduct = async (req, res) => {
       VALUES ($1, $2, $3, $4, $5, true, $6, $7, now(), 3)
       RETURNING id;
     `;
-    const result = await client.query(queryProduct, 
+    /* const result = await client.query(queryProduct, 
                                       [name, description || "", 
                                       price, categoryId, sizes || "{}",
                                       bestseller || false, featured || false]);
-    const productId = result.rows[0].id;
+    const productId = result.rows[0].id; */
 
     // 2️⃣ Завантажуємо фото на Cloudinary і зберігаємо URL через сервіс Cloudinary
     /* if (files && files.length > 0) {
