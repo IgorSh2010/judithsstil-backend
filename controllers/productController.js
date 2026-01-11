@@ -35,7 +35,7 @@ export const createProduct = async (req, res) => {
   let uploaded = [];
 
   cloudinary.config(currenConf);
-  console.log("req.tenant - ", req.tenant);
+  console.log("req.tenant - ", req.tenantId);
   console.log("req - ", req);
   if (!name || !price) {
     return res.status(400).json({ message: "Brak wymaganych danych." });
