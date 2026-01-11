@@ -3,22 +3,38 @@ import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import dotenv from "dotenv";
 import { getCategory, setSizes } from "../middleware/productMiddleware.js";
+import { uploadProductImages } from "../servises/serviseCloudinery.js";
 
 dotenv.config();
 
-cloudinary.config({
+/* cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+}); */
 
+export const configs = {
+  lsstudio: {
+    cloud_name: process.env.LS_CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.LS_CLOUDINARY_API_KEY,
+    api_secret: process.env.LS_CLOUDINARY_API_SECRET,
+  },
+  judithsstil: {
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  }
+};
 
 export const createProduct = async (req, res) => {
   const client = req.dbClient;
   let { name, description, price, category, sizes, featured, bestseller} = req.body;
   let categoryId = null;
+  const currenConf = configs[req.tenant];
   const files = req.files;
   const uploaded = [];
+
+  cloudinary.config(currenConf);
 
   if (!name || !price) {
     return res.status(400).json({ message: "Brak wymaganych danych." });
@@ -46,22 +62,9 @@ export const createProduct = async (req, res) => {
                                       bestseller || false, featured || false]);
     const productId = result.rows[0].id;
 
-    // 2️⃣ Завантажуємо фото на Cloudinary
+    // 2️⃣ Завантажуємо фото на Cloudinary і зберігаємо URL через сервіс Cloudinary
     if (files && files.length > 0) {
-      for (const file of files) {
-        const shortName = uuidv4().slice(0, 18); // типу "f2a4c1e8b9"
-        const uploadResult = await cloudinary.uploader.upload(file.path, {
-          folder: `products/${productId}`,
-          public_id: shortName, // Cloudinary сам додасть розширення
-          resource_type: "image",
-        });
-
-        uploaded.push({
-                            url: uploadResult.secure_url,
-                            public_id: uploadResult.public_id,
-                          });
-        fs.unlinkSync(file.path); // видалення тимчасового файлу
-      }
+      uploaded = await uploadProductImages(cloudinary, files, productId);
     }
 
     // 3️⃣ Зберігаємо URL у базі
@@ -81,7 +84,6 @@ export const createProduct = async (req, res) => {
 
     res.json({
       message: "Produkt pomyślnie dodany!",
-      //product: { id: productId, name, price, images: uploadedUrls },
     });
 
     await client.query("COMMIT");
