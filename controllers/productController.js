@@ -52,8 +52,8 @@ export const createProduct = async (req, res) => {
     // 1️⃣ Створюємо сам товар
     const queryProduct = `
       INSERT INTO products (title, description, price, category_id, sizes, 
-                            is_available, is_bestseller, is_featured, updated_at)
-      VALUES ($1, $2, $3, $4, $5, true, $6, $7, now())
+                            is_available, is_bestseller, is_featured, updated_at, id)
+      VALUES ($1, $2, $3, $4, $5, true, $6, $7, now(), 3)
       RETURNING id;
     `;
     const result = await client.query(queryProduct, 
@@ -63,12 +63,12 @@ export const createProduct = async (req, res) => {
     const productId = result.rows[0].id;
 
     // 2️⃣ Завантажуємо фото на Cloudinary і зберігаємо URL через сервіс Cloudinary
-    if (files && files.length > 0) {
+    /* if (files && files.length > 0) {
       uploaded = await uploadProductImages(cloudinary, files, productId);
-    }
+    } */
 
     // 3️⃣ Зберігаємо URL у базі
-    if (uploaded.length > 0) {
+    /* if (uploaded.length > 0) {
       const insertImageQuery = `
         INSERT INTO product_images (product_id, image_url, public_id)
         VALUES ${uploaded.map((_, i) => `($1, $${i * 2 + 2}, $${i * 2 + 3})`).join(", ")} 
@@ -80,8 +80,8 @@ export const createProduct = async (req, res) => {
       });
       
       await client.query(insertImageQuery, params);
-    }
-
+    } */
+    
     res.json({
       message: "Produkt pomyślnie dodany!",
     });
