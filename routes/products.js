@@ -9,6 +9,7 @@ const router = express.Router();
 const upload = multer({ dest: "tmp/" }); // тимчасова папка
 
 router.get("/get", tenantResolver, authenticateToken, getProducts);
+router.get("/get/:id", tenantResolver, authenticateToken, getProducts);
 router.get("/favorites/:id", tenantResolver, authenticateToken, getFavorites);
 router.get("/stats", tenantResolver, authenticateToken, getStatsDashboard);
 

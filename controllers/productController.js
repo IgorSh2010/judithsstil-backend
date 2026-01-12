@@ -7,12 +7,6 @@ import { uploadProductImages } from "../servises/serviseCloudinery.js";
 
 dotenv.config();
 
-/* cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-}); */
-
 export const configs = {
   lsstudio: {
     cloud_name: process.env.LS_CLOUDINARY_CLOUD_NAME,
@@ -149,23 +143,39 @@ export const createProduct = async (req, res) => {
 };
 
 export const getProducts = async (req, res) => {
-  const client = req.dbClient;  
+  const client = req.dbClient; 
+  const { id } = req.params; 
   try {
-
-    const query = `
-      SELECT p.id, p.title, p.description, p.price, p.quantity, p.is_available, p.is_bestseller, p.is_featured,
-        COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
-      FROM products p
-      LEFT JOIN product_images pi ON p.id = pi.product_id
-      GROUP BY p.id
-      ORDER BY p.created_at DESC;
-    `;
-    const result = await client.query(query);
-    const products = result.rows.map((p) => ({
-      ...p,
-      images: typeof p.images === "string" ? JSON.parse(p.images) : p.images
-    }));
-    res.json(products);
+    if (id) {
+        const query = `
+          SELECT p.id, p.title, p.description, p.price, p.quantity, p.is_available, p.is_bestseller, p.is_featured,
+            COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
+          FROM products p
+          LEFT JOIN product_images pi ON p.id = pi.product_id
+          WHERE p.id = $1
+          GROUP BY p.id
+        `;
+        const result = await client.query(query, [id]);
+        const product = result.rows[0];
+        res.json(product);
+        return;
+    } else {
+        const query = `
+        SELECT p.id, p.title, p.description, p.price, p.quantity, p.is_available, p.is_bestseller, p.is_featured,
+          COALESCE(json_agg(pi.image_url) FILTER (WHERE pi.image_url IS NOT NULL), '[]') AS images
+        FROM products p
+        LEFT JOIN product_images pi ON p.id = pi.product_id
+        GROUP BY p.id
+        ORDER BY p.created_at DESC;
+      `;
+      const result = await client.query(query);
+      const products = result.rows.map((p) => ({
+        ...p,
+        images: typeof p.images === "string" ? JSON.parse(p.images) : p.images
+      }));
+      res.json(products);      
+    }
+    
   } catch (err) {
     console.error("❌ Błąd pobierania produktów:", err);
     res.status(500).json({ message: "Błąd serwera" });
