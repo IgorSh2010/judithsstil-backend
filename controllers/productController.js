@@ -75,11 +75,11 @@ export const createProduct = async (req, res) => {
   const client = req.dbClient;
   let { name, description, price, category, sizes, featured, bestseller} = req.body;
   let categoryId = null;
-  const currenConf = configs[req.tenantId];
+  const currentConf = configs[req.tenantId];
   const files = req.files;
   let uploaded = [];
 
-  cloudinary.config(currenConf);
+  cloudinary.config(currentConf);
   
   if (!name || !price) {
     return res.status(400).json({ message: "Brak wymaganych danych." });
@@ -222,9 +222,13 @@ export const deleteProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
   const client = req.dbClient;
   const productId = req.params.id;
+  const currentConf = configs[req.tenantId];
   const fields = req.body;
   const files = req.files;
-    
+  let uploaded = [];
+   
+  cloudinary.config(currentConf);
+
   try {
     await client.query("BEGIN");
     if (!productId) {
@@ -274,7 +278,7 @@ export const updateProduct = async (req, res) => {
     }
 
     // 🔸 Завантаження нових зображень
-    const uploaded = [];
+    /* const uploaded = [];
     if (files && files.length > 0) {
       const uploadPromises = files.map(async (file) => {
         const shortName = uuidv4().slice(0, 18);
@@ -288,10 +292,16 @@ export const updateProduct = async (req, res) => {
           url: uploadResult.secure_url,
           public_id: uploadResult.public_id,
         };
-      });
 
+      }); 
+      
       const uploadedResults = await Promise.all(uploadPromises);
       uploaded.push(...uploadedResults);
+      }*/
+
+      if (files && files.length > 0) {
+        uploaded = await uploadProductImages(cloudinary, files, productId);
+      }      
 
       if (uploaded.length > 0) {
         const insertImageQuery = `
@@ -301,8 +311,7 @@ export const updateProduct = async (req, res) => {
         const params = [productId];
         uploaded.forEach(img => params.push(img.url, img.public_id));
         await client.query(insertImageQuery, params);
-      }
-    }
+      }    
 
     // 🔸 Видалення зображень
     if (fields.removedImages && Array.isArray(fields.removedImages) && fields.removedImages.length > 0) {
