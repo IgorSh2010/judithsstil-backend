@@ -274,6 +274,7 @@ export const updateProduct = async (req, res) => {
         RETURNING *;
       `;
       values.push(productId);
+      console.log(query, ' - ', values);
       result = await client.query(query, values);
     }
 
