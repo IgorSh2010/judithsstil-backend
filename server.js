@@ -1,15 +1,15 @@
-import express from "express";
-import cookieParser from "cookie-parser";
-import cors from "cors";
-import { authenticateToken } from "./middleware/authMiddleware.js"; 
-import authRoutes from "./routes/auth.js"; 
-import userRoutes from "./routes/users.js";
-import products from "./routes/products.js";
-import publicRoutes from "./routes/public.js";
-import adminRoutes from "./routes/admin.js";
-import dotenv from "dotenv";
+import express from 'express'
+import cookieParser from 'cookie-parser'
+import cors from 'cors'
+import { authenticateToken } from './middleware/authMiddleware.js'
+import authRoutes from './routes/auth.js'
+import userRoutes from './routes/users.js'
+import products from './routes/products.js'
+import publicRoutes from './routes/public.js'
+import adminRoutes from './routes/admin.js'
+import dotenv from 'dotenv'
 
-dotenv.config();
+dotenv.config()
 
 /*
 🔹 server.js — тільки точка входу: підняти Express, підключити middleware, маршрути, запустити сервер.
@@ -19,43 +19,47 @@ dotenv.config();
 🔹 middleware/ — наприклад, перевірка JWT чи логування.
 */
 
-const app = express();
-app.use(cors({
-              origin: ['http://localhost:3000', 'https://judithsstil.vercel.app'],
-              methods: ["GET", "POST", "PUT", "DELETE"],
-              credentials: true,
-            }));
-app.use(cookieParser());            
-app.use(express.json());
+const app = express()
+app.use(
+  cors({
+    origin: ['http://localhost:3000', 'https://judithsstil.vercel.app'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+  }),
+)
+app.use(cookieParser())
+app.use(express.json())
 
 // Маршрути
-app.use("/api/auth", authRoutes); 
-app.use("/api/users", userRoutes);
-app.use("/api/products", products);
-app.use("/api/public", publicRoutes);
-app.use("/api/admin", adminRoutes);
+app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/products', products)
+app.use('/api/public', publicRoutes)
+app.use('/api/admin', adminRoutes)
 
-app.get("/api/verify-token", authenticateToken, (req, res) => {
-  res.json({ valid: true, user: req.user });
-});
+app.get('/api/verify-token', authenticateToken, (req, res) => {
+  res.json({ valid: true, user: req.user })
+})
 
 // 🔹 Тестовий роут
-app.get("/", (req, res) => {
-  res.send("Backend API працює ✅🚀");
-});
+app.get('/', (req, res) => {
+  res.send('Backend API працює ✅🚀')
+})
 
 //app.listen(5000, () => console.log("🚀 Server running on port 5000"))
 
 // 🔹 Запуск сервера
-const PORT = process.env.PORT || 4042;
+const PORT = process.env.PORT || 4042
 app.listen(PORT, () => {
-  console.log(`🚀 Backend API слухає на порту ${PORT}`);
-});
+  console.log(
+    `🚀 Backend API слухає на порту ${PORT}. Підключено до judithsstil-backend.`,
+  )
+})
 
-process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err);
-});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err)
+})
 
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection:", reason);
-});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection:', reason)
+})
