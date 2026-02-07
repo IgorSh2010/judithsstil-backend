@@ -31,13 +31,13 @@ app.use(cookieParser())
 app.use(express.json())
 
 // Маршрути
-app.use('/api/auth', authRoutes)
-app.use('/api/users', userRoutes)
-app.use('/api/products', products)
-app.use('/api/public', publicRoutes)
-app.use('/api/admin', adminRoutes)
+app.use('/apijs/auth', authRoutes)
+app.use('/apijs/users', userRoutes)
+app.use('/apijs/products', products)
+app.use('/apijs/public', publicRoutes)
+app.use('/apijs/admin', adminRoutes)
 
-app.get('/api/verify-token', authenticateToken, (req, res) => {
+app.get('/apijs/verify-token', authenticateToken, (req, res) => {
   res.json({ valid: true, user: req.user })
 })
 
